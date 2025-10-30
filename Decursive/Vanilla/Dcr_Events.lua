@@ -1,7 +1,7 @@
 --[[
     This file is part of Decursive.
 
-    Decursive (v 2.7.31) add-on for World of Warcraft UI
+    Decursive (v 2.7.30) add-on for World of Warcraft UI
     Copyright (C) 2006-2025 John Wellesz (Decursive AT 2072productions.com) ( http://www.2072productions.com/to/decursive.php )
 
     Decursive is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
     Decursive is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
 
-    This file was last updated on 2025-10-25T22:02:03Z
+    This file was last updated on 2025-10-22T11:11:23Z
 --]]
 -------------------------------------------------------------------------------
 
@@ -1124,12 +1124,39 @@ do
     local GetTalentInfo      = _G.GetTalentInfo;
 
     local function CheckTalentsAvaibility() -- {{{
+
+
         if not (UnitGUID("player")) then
-            D:Debug("Player GUID not available");
             return false;
         end
 
-        return true;
+        local playerLevel = UnitLevel("player");
+
+        -- no talents before level 10
+        if playerLevel > 0 and (playerLevel < 10 or DC.CATACLYSM and playerLevel < 15) then
+            return true;
+        end
+
+        -- if we know that there are unspent talents, it means we can check for
+        -- them
+        if not DC.WOWC and _G.GetNumUnspentTalents and GetNumUnspentTalents() then
+            return true;
+        end
+
+        if (DC.WOWC) then
+            -- local name, iconTexture, tier, column, rank, maxRank, isExceptional, available = GetTalentInfo
+            -- On loading the 8th value (available) is nil
+            for talent=1, (not DC.CATACLYSM and GetNumTalentTabs and GetNumTalentTabs() or 3) do
+                if (select(8, GetTalentInfo(talent, 1))) then
+                    return true;
+                end
+            end
+        end
+
+        -- then, if none of the above succeeded, talents aren't ready to be
+        -- polled.
+        return false;
+
     end -- }}}
 
     --[=[@alpha@
@@ -1171,6 +1198,6 @@ do
     end
 end
 
-T._LoadedFiles["Dcr_Events.lua"] = "2.7.31";
+T._LoadedFiles["Dcr_Events.lua"] = "2.7.30";
 
 -- The Great Below
