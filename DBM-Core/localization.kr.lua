@@ -67,8 +67,10 @@ L.SCENARIO_COMPLETE			= "%s|1을;를; %s만에 완료했습니다!"
 L.SCENARIO_COMPLETE_I		= "%s|1을;를; 완료했습니다! 총 %d회 완료했습니다."
 L.SCENARIO_COMPLETE_L		= "%s|1을;를; %s만에 완료했습니다! 지난번 완료 기록은 %s, 가장 빠른 기록은 %s 입니다. 총 %d회 완료했습니다."
 L.SCENARIO_COMPLETE_NR		= "%s|1을;를; %s만에 완료했습니다! 신기록입니다! (이전 기록은 %s) 총 %d회 완료했습니다."
-L.COMBAT_ENDED_AT			= "%s (%s) 전투에서 %s만에 전멸했습니다."
-L.COMBAT_ENDED_AT_LONG		= "%s (%s) 전투에서 %s만에 전멸했습니다. 현재 난이도에서 총 %d회 전멸했습니다."
+L.COMBAT_ENDED_AT			= "%s (%s) 전투가 %s만에 종료됐습니다."--Health Included
+L.COMBAT_ENDED					= "%s 전투가 %s만에 종료됐습니다."--No health (post midnight)
+L.COMBAT_ENDED_AT_LONG			= "%s (%s) 전투가 %s만에 종료됐습니다. 현재 난이도에서 총 %d회 전멸했습니다."--Health Included
+L.COMBAT_ENDED_LONG			= "%s 전투가 %s만에 종료됐습니다. 현재 난이도에서 총 %d회 전멸했습니다."--No health (post midnight)
 L.GUILD_COMBAT_ENDED_AT		= "%s의 길드 그룹이 %s (%s)에서 %s만에 전멸했습니다."--Health Included
 L.GUILD_COMBAT_ENDED					= "%s의 길드 그룹이 %s에서 %s만에 전멸했습니다."--No health (post midnight)
 L.SCENARIO_ENDED_AT			= "%s|1이;가; %s만에 끝났습니다."
@@ -86,7 +88,8 @@ L.LOWHEALTH_WARNING						= "생명력 낮음 (%d퍼센트 남음), 경고음 재
 L.ENTERING_COMBAT						= "전투 시작"
 L.LEAVING_COMBAT						= "전투 종료"
 
-L.COMBAT_STARTED_AI_TIMER	= "내 CPU는 신경망 프로세서. 기계학습형 컴퓨터 (이 전투에선 새로운 타이머 인공지능 기능을 사용해서 예상 타이머 바를 생성합니다)"
+L.RAID_DIFFICULTY_CHANGED				= "공격대 난이도가 %s|1으로;로; 설정되었습니다."
+L.DUNGEON_DIFFICULTY_CHANGED			= "던전 난이도가 %s|1으로;로; 설정되었습니다."
 
 L.PROFILE_NOT_FOUND			= "<" .. L.DBM .. "> 현재 설정된 프로필이 손상되었습니다. " .. L.DBM .. "이 'Default' 프로필을 로딩할 것입니다."
 L.PROFILE_CREATED			= "'%s' 프로필을 생성했습니다."
@@ -586,7 +589,7 @@ L.AUTO_INFO_FRAME_OPTION_TEXT2		= "전투 전반에 관한 사항을 정보 창�
 L.AUTO_INFO_FRAME_OPTION_TEXT3		= "$spell:%s|1을;를; 정보 창에 표시 (%%s의 제한 수치 이상인 경우)"
 L.AUTO_READY_CHECK_OPTION_TEXT		= "보스가 풀링되면 전투 준비 효과음 듣기 (보스를 대상으로 잡지 않아도 재생)"
 L.AUTO_SPEEDCLEAR_OPTION_TEXT		= "%s의 완료 신기록 타이머 표시"
-L.AUTO_PRIVATEAURA_OPTION_TEXT		= "이 전투에서 설정한 $spell:%s 비공개 오라에 DBM 효과음 경고를 재생합니다."
+L.AUTO_PRIVATEAURA_OPTION_TEXT		= "이 전투에서 비공개 오라 $spell:%s에 DBM 효과음 경고를 재생합니다."
 
 L.AUTO_GOSSIP_BUFFS						= "NPC나 전문기술 버프 오브젝트 대화 자동 선택"
 L.AUTO_GOSSIP_PERFORM_ACTION			= "사물을 작동시키는 (순간이동 사용 같은) 선택지 자동 선택"

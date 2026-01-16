@@ -54,16 +54,17 @@ L:SetOptionLocalization{
 	WarnShatter	= "Mostrar anuncio para hacerse añicos"
 }
 L:SetMiscLocalization{
-	Slow	= "comienza a ir más despacio",
-	Freezing= "se está congelando",
-	Frozen	= "no se puede mover",
-	Phase4 	= "comienza a desmoronarse",
-	Phase5 	= "parece a punto de hacerse añicos",
-	Phase6 	= "explota",--Might want to double check this, since no further messages appeared after the previous one.
+	Slow	= "comienza a remitir!",
+	Freezing= "se queda inmóvil!",
+	Frozen	= "está !", -- ¡Viscidus está ! is obviously a mistake but that is the correct emote from chatlog and transcriptor
+	Phase4 	= "empieza a desmoronarse!",
+	Phase5 	= "parece a punto de hacerse añicos!",
+	Phase6 	= "explota",
 
 	FrostHitsPerSecond = "Golpes de escarcha por segundo",
 	MeleeHitsPerSecond = "Golpes cuerpo a cuerpo por segundo"
 }
+
 -------------
 -- Huhuran --
 -------------
@@ -79,10 +80,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "Emperadores Gemelos"
-}
-L:SetMiscLocalization{
-	Veklor = "Emperor Vek'lor",
-	Veknil = "Emperor Vek'nilash"
 }
 
 ------------
@@ -123,11 +120,12 @@ L:SetOptionLocalization{
 	RangeFrame				= "Mostrar marco de distancia (10 m)"
 }
 L:SetMiscLocalization{
-	Stomach		= "Estómago de C'Thun",
+	Stomach		= "Estómago",
 	FleshTent	= "Tentáculo de carne",
 	Weakened 	= "está débil!",
 	NotValid	= "AQ40 parcialmente limpiado. Quedan %s jefes opcionales."
 }
+
 ----------------
 -- Ouro --
 ----------------
@@ -174,6 +172,7 @@ L:SetOptionLocalization{
 	SpecWarnExplosion 	= "Mostrar anuncio especial cuando aparezcan múltiples fantasmas explosivos ($spell:1214871)",
 	TimerExplosion 		= "Mostrar temporizador para cuando aparezcan múltiples fantasmas explosivos ($spell:1214871)"
 }
+
 ---------------
 -- Kurinnaxx --
 ---------------
@@ -182,6 +181,7 @@ L = DBM:GetModLocalization("Kurinnaxx")
 L:SetGeneralLocalization{
 	name 		= "Kurinnaxx"
 }
+
 ------------
 -- Rajaxx --
 ------------
@@ -199,7 +199,7 @@ L:SetOptionLocalization{
 L:SetMiscLocalization{
 	Wave12		= "Ahí vienen. Intenta que no te maten,",--Followed by 'chico' or 'chica'
 	Wave12Alt	= "Rajaxx, ¿recuerdas que te dije que serías el último en morir?",
-	Wave3		= "¡Se acerca la hora de imponer nuestro castigo!	¡Que la oscuridad reine en los corazones de nuestros enemigos!",
+	Wave3		= "¡Se acerca la hora de imponer nuestro castigo!\r\n ¡Que la oscuridad reine en los corazones de nuestros enemigos!",
 	Wave4		= "¡No nos quedaremos esperando por más tiempo tras puertas con barrotes ni muros de piedra! ¡Ya no nos negarán nuestra venganza! ¡Hasta los propios dragones temblarán antes nuestra ira!",
 	Wave5		= "¡El miedo es para el enemigo! ¡El miedo y la muerte!",
 	Wave6		= "¡Corzocelada lloriqueará y suplicará por su vida, al igual que hizo el mocoso de su cría! ¡Hoy se pondrá fin a mil años de injusticia!",
@@ -235,7 +235,7 @@ L:SetOptionLocalization{
 	WarnDismember	= DBM_CORE_L.AUTO_ANNOUNCE_OPTIONS.spell:format(96)
 }
 L:SetMiscLocalization{
-	PursueEmote 	= " mira a "
+	PursueEmote 	= "mira a"
 }
 
 -------------
@@ -263,7 +263,7 @@ L:SetTimerLocalization{
 }
 L:SetOptionLocalization{
 	WarnVulnerable	= "Mostrar anuncio para debilidades",
-	TimerVulnerable	= "Mostrar temporizador para la duración de las debilidades"
+	TimerVulnerable	= "Mostrar temporizador para debilidades"
 }
 
 ----------------
@@ -307,6 +307,7 @@ L:SetMiscLocalization{
 	Phase2Emote	= "huyen mientras se consume el poder del orbe.",
 	YellPull	= "¡Los invasores han penetrado en El Criadero! ¡Activad la alarma! ¡Hay que proteger los huevos a toda costa!"
 }
+
 -------------------
 --  Vaelastrasz  --
 -------------------
@@ -319,6 +320,7 @@ L:SetGeneralLocalization{
 L:SetMiscLocalization{
 	Event				= "¡Demasiado tarde, amigos! Ahora estoy poseído por la corrupción de Nefarius. No puedo... controlarme."
 }
+
 -----------------
 --  Broodlord  --
 -----------------
@@ -358,9 +360,12 @@ L = DBM:GetModLocalization("Flamegor")
 L:SetGeneralLocalization{
 	name = "Flamagor"
 }
+
 ----------------
 --  Ebonroc and Flamegor  --
 ----------------
+L = DBM:GetModLocalization("EbonrocandFlamegor")
+
 L:SetGeneralLocalization{
 	name = "Ebanorroca y Flamagor"
 }
@@ -376,6 +381,7 @@ L:SetMiscLocalization{
 	Ebonroc		= "Ebanorroca",
 	Flamegor	= "Flamagor"
 }
+
 -----------------------
 --  Vulnerabilities  --
 -----------------------
@@ -499,6 +505,7 @@ SpecWarnBothBombs			= "Mostrar anuncio especial si las bombas azul y verde está
 SpecWarnBothBombsYou		= "Mostrar anuncio especial si las bombas azul y verde están en ti",
 TimerBombs					= "Mostrar temporizador para las bombas de prueba azul y verde"
 }
+
 ----------------
 --  Lucifron  --
 ----------------
@@ -585,6 +592,7 @@ L:SetTimerLocalization{
 L:SetOptionLocalization{
 	timerShieldCD		= "Mostrar temporizador para el próximo Escudo de daño/reflejo"
 }
+
 ----------------
 --  Ragnaros  --
 ----------------
@@ -629,6 +637,7 @@ L:SetOptionLocalization{
 L:SetWarningLocalization{
 	WarnBossPower		= "Energía del jefe al %d%%"
 }
+
 -----------------
 --  MC: Trash  --
 -----------------
@@ -637,6 +646,7 @@ L = DBM:GetModLocalization("MCTrash")
 L:SetGeneralLocalization{
 	name = "Bichos"
 }
+
 -------------------
 --  Venoxis  --
 -------------------
@@ -719,8 +729,6 @@ L:SetGeneralLocalization{
 	name = "Señor sangriento Mandokir"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "Señor sangriento Mandokir",
-	Ohgan		= "Ohgan",
 	GazeYell	= "Te estoy vigilando"
 }
 
@@ -731,12 +739,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "Extremo de la Locura"
-}
-L:SetMiscLocalization{
-	Hazzarah = "Hazza'rah",
-	Renataki = "Renataki",
-	Wushoolay = "Wushoolay",
-	Grilek = "Gri'lek"
 }
 
 -------------------
@@ -759,6 +761,7 @@ L:SetGeneralLocalization{
 L:SetMiscLocalization{
 	Ghosts = "Fantasmas"
 }
+
 --------------
 --  Onyxia  --
 --------------
@@ -800,7 +803,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull1				= "¡Eso, corred! ¡Así la sangre circula más rápido!",
+	Pull1				= "Eso... ¡Corred! ¡Así la sangre bombeará más rápido!",
 	Pull2				= "Solo un bocado...",
 	Pull3				= "No hay salida."
 })
@@ -825,7 +828,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "¡Arrodíllate ante mí, sabandija!"--Not actually pull trigger, but often said on pull
+	Pull1					= "¡Arrodíllate ante mí, gusano!",
+	Pull2 					= "¡No puedes esconderte de mí!",
+	Pull3					= "¡Matadlos en nombre del maestro!",
+	Pull4					= "¡Corred mientras podáis!"
 })
 
 -------------
@@ -880,8 +886,9 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "¡Muere, intruso!",
-	Pull2				= "¡Gloria al amo!",
-	AddsYell			= "¡Levantaos, soldados míos! ¡Levantaos y luchad una vez más!"
+	Pull2				= "¡Gloria al maestro!",
+	Pull3 				= "¡Ha llegado tu hora!",
+	AddsYell			= "¡Adelante, mis soldados! ¡Luchad una vez más!"
 })
 
 ----------------------
@@ -909,8 +916,9 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull1				= "Ahora me perteneces.",
-	Pull2				= "Te veo..."
+	Pull1				= "Ahora sois míos.",
+	Pull2				= "Te veo...",
+	Pull3				= "Estás... estás cerca."
 })
 
 -------------
@@ -946,7 +954,7 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	yell1 = "¡Remendejo quiere jugar!",
-	yell2 = "¡Remendejo es la encarnación de guerra de Kel'Thuzad!"
+	yell2 = "¡Kel'Thuzad convertir a Remendejo en su avatar de guerra!"
 })
 
 ---------------
@@ -977,9 +985,9 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization({
-	Yell	= "¡Stalagg aplasta!",
+	Yell	= "¡Stalagg machacarte!",
 	Emote	= "¡%s se sobrecarga!",
-	Emote2	= "¡Espiral Tesla se sobrecarga!",
+	Emote2	= "¡Espiral tesla se sobrecarga!",
 	Charge1 = "negativo",
 	Charge2 = "positivo"
 })
@@ -1008,10 +1016,10 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization({
-	Yell1 = "¡No tengáis piedad!",
-	Yell2 = "¡El tiempo de practicar ha pasado! ¡Quiero ver lo que habéis aprendido!",
+	Yell1 = "¡No muestres misericordia!",
+	Yell2 = "¡Se acabado la práctica! ¡Enseñadme lo que habéis aprendido!",
 	Yell3 = "¡Poned en práctica lo que os he enseñado!",
-	Yell4 = "Un barrido con pierna... ¿Tienes algún problema?"
+	Yell4 = "Arrastra la pierna... ¿Tienes algún problema con eso?"
 })
 
 L:SetOptionLocalization({
@@ -1054,7 +1062,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell			= "Tú mismo has buscado tu final.",
 	WarningWave1	= "%d %s",
 	WarningWave2	= "%d %s y %d %s",
 	WarningWave3	= "%d %s, %d %s y %d %s",
@@ -1076,10 +1083,11 @@ L:SetGeneralLocalization({
 L:SetOptionLocalization({
 	WarningMarkSoon				= "Mostrar anuncio anticipado para las marcas",
 	SpecialWarningMarkOnPlayer	= "Mostrar anuncio especial cuando estés afectado por más de cuatro marcas",
-	timerMark					= "Mostrar temporizador para la siguiente marca de los jinetes (con contador)"
+	timerMark					= "Mostrar temporizador para la próxima marca de los jinetes (con contador)"
 })
 
 L:SetTimerLocalization({
+	timerMark	= "Marca %d"
 })
 
 L:SetWarningLocalization({
@@ -1093,7 +1101,7 @@ L:SetWarningLocalization({
 L = DBM:GetModLocalization("SapphironVanilla")
 
 L:SetGeneralLocalization({
-	name = "Sapphiron"
+	name = "Safirón"
 })
 
 L:SetOptionLocalization({
@@ -1147,6 +1155,7 @@ L:SetWarningLocalization({
 L:SetTimerLocalization({
 	TimerPhase2	= "Fase 2"
 })
+
 -----------------
 --  Naxx Trash --
 -----------------
@@ -1156,6 +1165,7 @@ L = DBM:GetModLocalization("NaxxTrash")
 L:SetGeneralLocalization({
 	name = "Bichos"
 })
+
 ---------------------------
 --  Season of Discovery  --
 ---------------------------
@@ -1405,15 +1415,3 @@ L = DBM:GetModLocalization("ShadeofEranikusSoD")
 L:SetGeneralLocalization({
 	name = "Sombra de Eranikus"
 })
-
-
-
-
-
-
-
-
-
-
-
-

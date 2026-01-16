@@ -656,7 +656,7 @@ function atributo_misc:UpdateDeathRow(deathTable, whichRowLine, rankPosition, in
 	if (instanceObject.row_info.use_spec_icons) then
 		local nome = deathTable[3]
 		local spec = instanceObject.showing(1, nome) and instanceObject.showing(1, nome).spec or(instanceObject.showing(2, nome) and instanceObject.showing(2, nome).spec)
-		if (spec and spec ~= 0) then
+		if (spec and spec ~= 0 and Details.class_specs_coords[spec]) then
 			thisRow.icone_classe:SetTexture(instanceObject.row_info.spec_file)
 			thisRow.icone_classe:SetTexCoord(unpack(Details.class_specs_coords[spec]))
 		else
@@ -690,6 +690,8 @@ function atributo_misc:UpdateDeathRow(deathTable, whichRowLine, rankPosition, in
 end
 
 function atributo_misc:RefreshWindow(instance, combatObject, bIsForceRefresh, bIsExport)
+	if not Details222.UpdateIsAllowed() then return end --temporary stop updates in th new dlc
+
 	---@type actorcontainer
 	local utilityActorContainer = combatObject[class_type]
 

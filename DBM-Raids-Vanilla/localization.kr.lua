@@ -16,7 +16,7 @@ L:SetGeneralLocalization{
 L = DBM:GetModLocalization("ThreeBugs")
 
 L:SetGeneralLocalization{
-	name = "벌레 무리"
+	name = "실리시드 왕실"
 }
 
 -------------
@@ -36,6 +36,7 @@ L = DBM:GetModLocalization("Fankriss")
 L:SetGeneralLocalization{
 	name = "불굴의 판크리스"
 }
+
 --------------
 -- Viscidus --
 --------------
@@ -61,8 +62,9 @@ L:SetMiscLocalization{
 	Phase6 	= "폭발",
 
 	FrostHitsPerSecond = "초당 냉기 공격 횟수",
-	MeleeHitsPerSecond = "초당 물리 공격 횟수",
+	MeleeHitsPerSecond = "초당 물리 공격 횟수"
 }
+
 -------------
 -- Huhuran --
 -------------
@@ -71,6 +73,7 @@ L = DBM:GetModLocalization("Huhuran")
 L:SetGeneralLocalization{
 	name = "공주 후후란"
 }
+
 ---------------
 -- Twin Emps --
 ---------------
@@ -78,10 +81,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "쌍둥이 제왕"
-}
-L:SetMiscLocalization{
-	Veklor = "제왕 베클로어",
-	Veknil = "제왕 베크닐라쉬"
 }
 
 ------------
@@ -95,36 +94,38 @@ L:SetGeneralLocalization{
 L:SetWarningLocalization{
 	WarnEyeTentacle			= "눈 달린 촉수",
 	WarnClawTentacle2		= "갈고리 촉수",
-	WarnGiantEyeTentacle		= "눈 달린 거대한 촉수",
-	WarnGiantClawTentacle		= "거대한 발톱 촉수",
-	SpecWarnWeakened		= "쑨 약화됨!"
+	WarnGiantEyeTentacle	= "눈 달린 거대한 촉수",
+	WarnGiantClawTentacle	= "거대한 발톱 촉수",
+	SpecWarnWeakened		= "쑨이 약해집니다!"
 }
 L:SetTimerLocalization{
 	TimerEyeTentacle		= "눈 달린 촉수",
 	TimerClawTentacle		= "갈고리 촉수",
-	TimerGiantEyeTentacle		= "눈 달린 거대한 촉수",
-	TimerGiantClawTentacle		= "거대한 발톱 촉수",
+	TimerGiantEyeTentacle	= "눈 달린 거대한 촉수",
+	TimerGiantClawTentacle	= "거대한 발톱 촉수",
 	TimerWeakened			= "쑨 약화 종료"
 }
 L:SetOptionLocalization{
 	WarnEyeTentacle			= "눈 달린 촉수 알림 보기",
 	WarnClawTentacle2		= "갈고리 촉수 알림 보기",
-	WarnGiantEyeTentacle		= "눈 달린 거대한 촉수 알림 보기",
-	WarnGiantClawTentacle		= "거대한 발톱 촉수 알림 보기",
+	WarnGiantEyeTentacle	= "눈 달린 거대한 촉수 알림 보기",
+	WarnGiantClawTentacle	= "거대한 발톱 촉수 알림 보기",
 	SpecWarnWeakened		= "보스 약화시 특수 알림 보기",
 	TimerEyeTentacle		= "다음 눈 달린 촉수 타이머 바 보기",
 	TimerClawTentacle		= "다음 갈고리 촉수 타이머 바 보기",
-	TimerGiantEyeTentacle		= "다음 눈 달린 거대한 촉수 타이머 바 보기",
-	TimerGiantClawTentacle		= "다음 거대한 발톱 촉수 타이머 바 보기",
+	TimerGiantEyeTentacle	= "다음 눈 달린 거대한 촉수 타이머 바 보기",
+	TimerGiantClawTentacle	= "다음 거대한 발톱 촉수 타이머 바 보기",
 	TimerWeakened			= "보스 약화 지속 시간 타이머 바 보기",
 	RangeFrame				= "거리 창 보기 (10m)"
 }
+
 L:SetMiscLocalization{
 	Stomach		= "뱃속",
-	FleshTent	= "식인 촉수",--Localized so it shows on frame in users language, not senders
+	FleshTent	= "식인 촉수", --Localized so it shows on frame in users language, not senders
 	Weakened 	= "약해집니다!",
 	NotValid	= "안퀴40 레이드를 일부만 클리어 했습니다. 더 잡을 수 있는 보스가 %s마리 남아있습니다."
 }
+
 ----------------
 -- Ouro --
 ----------------
@@ -180,6 +181,7 @@ L = DBM:GetModLocalization("Kurinnaxx")
 L:SetGeneralLocalization{
 	name 		= "쿠린낙스"
 }
+
 ------------
 -- Rajaxx --
 ------------
@@ -196,12 +198,13 @@ L:SetOptionLocalization{
 }
 L:SetMiscLocalization{
 	Wave12		= "그들이 오고 있다. 자신의 몸을 지키도록 하라!",
-	Wave3		= "응보의 날이 다가왔다! 암흑이 적들의 마음을 지배하리라!",
-	Wave4		= "더는 돌벽과 성문 뒤에서 기다릴 수 없다! 복수의 기회를 놓칠 수 없다. 우리가 분노를 터뜨리는 날 용족은 두려움에 떨리라.",
+	Wave12Alt 	= "내가 너는 꼭 마지막에 해치우겠다고 말했던 걸 기억하나, 라작스?",
+	Wave3		= "응보의 날이 다가왔다! 암흑이 적들의 마음을 지배하게 되리라!",
+	Wave4		= "‘더는’ 돌벽과 성문 뒤에서 기다릴 수 없다! 복수의 기회를 놓칠 수 없다. 우리가 분노를 터뜨리는 날 용족은 두려움에 떨리라.",
 	Wave5		= "적에게 공포와 죽음의 향연을!",
-	Wave6		= "스태그헬름은 흐느끼며 목숨을 구걸하리라. 그 아들놈이 그랬던 것처럼! 천 년의 한을 풀리라! 오늘에서야!",
+	Wave6		= "스테그헬름은 흐느끼며 목숨을 구걸하리라. 그 아들놈이 그랬던 것처럼! 천 년의 한을 풀리라! 오늘에서야!",
 	Wave7		= "판드랄! 때가 왔다! 에메랄드의 꿈속에 숨어서 기도나 올려라!",
-	Wave8		= "건방진... 내 친히 너희를 처치해주마!"
+	Wave8		= "건방진...  내 친히 너희를 처치해주마!"
 }
 
 ----------
@@ -278,6 +281,7 @@ L:SetOptionLocalization{
 	SpecWarnExplosion = "폭발하는 유령이 여러마리 등장시 특수 경고 보기 ($spell:1214871)",
 	TimerExplosion = "폭발하는 유령이 여러마리 등장시 타이머 바 보기 ($spell:1214871)"
 }
+
 -----------------
 --  Razorgore  --
 -----------------
@@ -293,9 +297,10 @@ L:SetOptionLocalization{
 	TimerAddsSpawn	= "첫번째 쫄 등장 타이머 바 보기"
 }
 L:SetMiscLocalization{
-	Phase2Emote	= "지배의 수정구가 힘을 잃고 작동을 멈춥니다!",
+	Phase2Emote	= "수정 구슬에서 통제력이 빠져나가자",
 	YellPull 	= "침입자들이 들어왔다! 어떤 희생이 있더라도 알을 반드시 수호하라!"
 }
+
 -------------------
 --  Vaelastrasz  --
 -------------------
@@ -308,6 +313,7 @@ L:SetGeneralLocalization{
 L:SetMiscLocalization{
 	Event	= "너무 늦었어! 네파리우스의 타락이 뿌리를 내려... 난... 나 자신을 통제할 수가 없어."
 }
+
 -----------------
 --  Broodlord  --
 -----------------
@@ -411,17 +417,17 @@ L:SetTimerLocalization{
 	TimerAllBreaths	= "연발 숨결"
 }
 L:SetOptionLocalization{
-	WarnBreath		= "크로마구스가 숨결 시전 시 알림 보기",
+	WarnBreath			= "크로마구스가 숨결 시전 시 알림 보기",
 	WarnVulnerableNew	= "주문 속성 약화 알림 보기",
-	TimerBreathCD	= "숨결 쿨타임 타이머 바 보기",
-	TimerBreath		= "숨결 시전 타이머 바 보기",
-	TimerVulnCD		= "약화 쿨타임 보기",
-	TimerAllBreaths = "연발 숨결 타이머 바 보기"
+	TimerBreathCD		= "숨결 쿨타임 타이머 바 보기",
+	TimerBreath			= "숨결 시전 타이머 바 보기",
+	TimerVulnCD			= "약화 쿨타임 보기",
+	TimerAllBreaths 	= "연발 숨결 타이머 바 보기"
 }
 L:SetMiscLocalization{
-	Breath1	= "1번 숨결",
-	Breath2	= "2번 숨결",
-	VulnEmote	= "%s 주춤하면서 물러나면서 가죽이 빛납니다.",
+	Breath1		= "1번 숨결",
+	Breath2		= "2번 숨결",
+	VulnEmote	= "주춤하면서 물러나면서 가죽이 빛납니다.",
 	Vuln		= "약화 속성",
 	Fire		= "화염",
 	Nature		= "자연",
@@ -454,17 +460,17 @@ L:SetOptionLocalization{
 	specwarnClassCall	= "직업 지목 대상일 때 특수 알림 보기"
 }
 L:SetMiscLocalization{
-	YellP1		= "게임을 시작하자!",
+	YellP1		= "흐흐흐흐... 게임을 시작하자!",
 	YellP2		= "잘했다! 적들의 사기가 떨어지고 있다! 검은바위 첨탑의 군주에게 도전한 대가를 치르게 해주자!",
 	YellP3		= "말도 안 돼! 일어나라! 다시 한 번 너희 주인을 섬겨라!",
-	YellShaman	= "주술사, 네놈의 토템이 얼마나 쓸모 있는지 한번 보자!",
-	YellPaladin	= "성기사여, 네 목숨은 여러개라고 하던데 어디 한번 보여다오.",
+	YellShaman	= "주술사, 네 놈의 토템이 얼마나 쓸모 있는지 한번 보자!",
+	YellPaladin	= "성기사여... 네 목숨은 여러 개라고 하던데 어디 한번 보여 다오.",
 	YellDruid	= "드루이드 녀석, 그 바보 같은 변신을 했다고 내가 모를 줄 알았더냐? 받아라!",
-	YellPriest	= "성직자야, 그렇게 치유를 계속할 테냐? 그럼 어디 좀 더 재미있게 만들어 줄까?",
-	YellWarrior	= "전사들이로군, 네가 그보다 더 강하게 내려칠 수 있다는 걸 알고 있다! 어디 한 번 제대로 쳐 보란 말이다!",
+	YellPriest	= "사제야, 그렇게 치유를 계속할 테냐?! 그럼 어디 좀 더 재미있게 만들어 줄까!",
+	YellWarrior	= "전사들이로군, 네가 그보다 더 강하게 내려 칠 수 있다는 걸 알고 있다! 어디 한번 제대로 쳐 보란 말이다!",
 	YellRogue	= "도적들인가? 숨어 다니지만 말고 나와서 나와 맞서라!",
-	YellWarlock	= "흑마법사여, 네가 이해하지도 못하는 마법을 가지고 장난을 쳐서야 쓰나... 바로 이런 꼴이 되어버렸지 않느냐!",
-	YellHunter	= "사냥꾼 놈에다 그 장난감 같은 총이라니! 정말 거슬리는구나!",
+	YellWarlock	= "흑마법사여, 네가 이해하지도 못하는 마법을 가지고 장난을 쳐서야 쓰나... 바로 이런 꼴이 되어 버렸지 않은가!",
+	YellHunter	= "사냥꾼 놈에다 그 장난감 같은 총이라니, 정말 거슬리는구나!",
 	YellMage	= "네가 마법사냐? 마법을 가지고 장난칠 상대를 고를 때는 좀 더 신중했어야지...",
 	YellDK		= "죽음의 기사여... 당장 이리 와라!",
 	YellMonk	= "수도사, 그렇게 굴러 다니면 어지럽지 않나?",
@@ -724,8 +730,6 @@ L:SetGeneralLocalization{
 	name = "혈군주 만도키르"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "혈군주 만도키르",
-	Ohgan		= "오간",
 	GazeYell	= "널 지켜보고 있겠다!"
 }
 
@@ -736,12 +740,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "광란의 경계"
-}
-L:SetMiscLocalization{
-	Hazzarah = "하자라",
-	Renataki = "레나타키",
-	Wushoolay = "우슐레이",
-	Grilek = "그리렉"
 }
 
 -------------------
@@ -832,7 +830,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "내 앞에 무릎을 꿇어라, 벌레들아!"
+	Pull1					= "내 앞에 무릎을 꿇어라, 벌레들아!",
+	Pull2					= "나에게서 도망칠 수는 없다!",
+	Pull3 					= "주인님의 이름으로 처단하라!",
+	Pull4 					= "두 발이 성할 때 도망쳐라!"
 })
 
 ---------------
@@ -850,7 +851,7 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	TimerSpider		= "다음 맥스나의 새끼 거미"
+	TimerSpider		= "맥스나의 새끼 거미"
 })
 
 L:SetOptionLocalization({
@@ -888,6 +889,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull1				= "죽어라, 침입자들아!",
 	Pull2				= "주인님께 영광을!",
+	Pull3				= "너희 생명은 끝이다!",
 	AddsYell			= "일어나라, 병사들이여! 다시 일어나 싸워라!"
 })
 
@@ -917,7 +919,8 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "이제 넌 내 것이다.",
-	Pull2				= "네가 보인다..."
+	Pull2				= "네가 보인다...",
+	Pull3 				= "다음은... 너다."
 })
 
 ---------------
@@ -1062,7 +1065,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell			= "어리석은 것들, 스스로 죽음을 자초하다니!",
 	WarningWave2	= "%d %s, %d %s",
 	WarningWave3	= "%d %s, %d %s, %d %s",
 	Trainee			= "수련생",
@@ -1087,7 +1089,7 @@ L:SetOptionLocalization({
 })
 
 L:SetTimerLocalization({
-	timerMark	= "%d번 징표",
+	timerMark	= "%d번 징표"
 })
 
 L:SetWarningLocalization({
@@ -1588,12 +1590,3 @@ L:SetMiscLocalization{
 	Prison = "감옥",
 	Cathedral = "대성당"
 }
-
-
-
-
-
-
-
-
-

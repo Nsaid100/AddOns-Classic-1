@@ -71,8 +71,10 @@ L.SCENARIO_COMPLETE						= "%s completed after %s!"
 L.SCENARIO_COMPLETE_I					= "%s completed! You have %d total clears."
 L.SCENARIO_COMPLETE_L					= "%s completed after %s! Your last clear took %s and your fastest clear took %s. You have %d total clears."
 L.SCENARIO_COMPLETE_NR					= "%s completed after %s! This is a new record! (Old record was %s). You have %d total clears."
-L.COMBAT_ENDED_AT						= "Combat against %s (%s) ended after %s."
-L.COMBAT_ENDED_AT_LONG					= "Combat against %s (%s) ended after %s. You have %d total wipe(s) on this difficulty."
+L.COMBAT_ENDED_AT						= "Combat against %s (%s) ended after %s."--Health Included
+L.COMBAT_ENDED							= "Combat against %s ended after %s."--No health (post midnight)
+L.COMBAT_ENDED_AT_LONG					= "Combat against %s (%s) ended after %s. You have %d total wipe(s) on this difficulty."--Health Included
+L.COMBAT_ENDED_LONG						= "Combat against %s ended after %s. You have %d total wipe(s) on this difficulty."--No health (post midnight)
 L.GUILD_COMBAT_ENDED_AT					= "%s's Guild group has wiped on %s (%s) after %s."--Health Included
 L.GUILD_COMBAT_ENDED					= "%s's Guild group has wiped on %s after %s."--No health (post midnight)
 L.SCENARIO_ENDED_AT						= "%s ended after %s."
@@ -90,7 +92,8 @@ L.LOWHEALTH_WARNING						= "Low Health (%d percent health remaining), firing sou
 L.ENTERING_COMBAT						= "Entering combat"
 L.LEAVING_COMBAT						= "Leaving combat"
 
-L.COMBAT_STARTED_AI_TIMER				= "My CPU is a neural net processor; a learning computer. (This fight will use timer AI feature to generate timer approximations)"
+L.RAID_DIFFICULTY_CHANGED				= "Raid difficulty has been set to %s."
+L.DUNGEON_DIFFICULTY_CHANGED			= "Dungeon difficulty has been set to %s."
 
 L.PROFILE_NOT_FOUND						= "<" .. L.DBM .. "> Your current profile is corrupted. " .. L.DBM .. " will load 'Default' profile."
 L.PROFILE_CREATED						= "'%s' profile created."

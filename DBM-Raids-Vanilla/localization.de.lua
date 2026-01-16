@@ -59,8 +59,12 @@ L:SetMiscLocalization{
 	Frozen	= "ist tiefgefroren",
 	Phase4 	= "geht die Puste aus",
 	Phase5 	= "ist kurz davor, zu zerspringen",
-	Phase6 	= "Explodes." --translate (trigger)
+	Phase6 	= "Explodes.",
+
+	FrostHitsPerSecond   = "Frost-Treffer pro Sekunde",
+	MeleeHitsPerSecond   = "Nahkampftreffer pro Sekunde"
 }
+
 -------------
 -- Huhuran --
 -------------
@@ -69,6 +73,7 @@ L = DBM:GetModLocalization("Huhuran")
 L:SetGeneralLocalization{
 	name = "Prinzessin Huhuran"
 }
+
 ---------------
 -- Twin Emps --
 ---------------
@@ -76,10 +81,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "Zwillingsimperatoren"
-}
-L:SetMiscLocalization{
-	Veklor = "Imperator Vek'lor",
-	Veknil = "Imperator Vek'nilash"
 }
 
 ------------
@@ -98,10 +99,10 @@ L:SetWarningLocalization{
 	SpecWarnWeakened		= "C'Thun ist geschwächt!"
 }
 L:SetTimerLocalization{
-	TimerEyeTentacle		= "Nächstes Augententakel",
-	TimerClawTentacle		= "Nächstes Klauententakel",
-	TimerGiantEyeTentacle	= "Nächstes Riesiges Augententakel",
-	TimerGiantClawTentacle	= "Nächstes Riesiges Klauententakel",
+	TimerEyeTentacle		= "Augententakel",
+	TimerClawTentacle		= "Klauententakel",
+	TimerGiantEyeTentacle	= "Riesiges Augententakel",
+	TimerGiantClawTentacle	= "Riesiges Klauententakel",
 	TimerWeakened			= "Schwäche endet"
 }
 L:SetOptionLocalization{
@@ -118,11 +119,12 @@ L:SetOptionLocalization{
 	RangeFrame				= "Zeige Abstandsfenster (10m)"
 }
 L:SetMiscLocalization{
-	Stomach		= "Magen von C'Thun",
+	Stomach		= "Magen",
 	FleshTent	= "Fleischtentakel",
-	Weakened 	= "C'Thun ist geschwächt!",
-	NotValid	= "AQ40 teilweise gelöscht. % s optionale Bosse bleiben erhalten."
+	Weakened 	= "ist geschwächt!",
+	NotValid	= "AQ40 teilweise gelöscht. %s optionale Bosse bleiben erhalten."
 }
+
 ----------------
 -- Ouro --
 ----------------
@@ -264,6 +266,7 @@ L:SetMiscLocalization{
 	Phase2Emote	= "flieht während die kontrollierenden Kräfte der Kugel schwinden.",
 	YellPull 	= "Eindringlinge sind in die Brutstätte vorgestoßen! Schlagt Alarm! Beschützt die Eier um jeden Preis!"
 }
+
 -------------------
 --  Vaelastrasz  --
 -------------------
@@ -421,6 +424,7 @@ L:SetOptionLocalization{
 	specwarnClassCall = "Zeige besondere Warnung wenn Du von einem Klassenruf betroffen bist"
 }
 L:SetMiscLocalization{
+	YellP1		= "Lasst die Spiele beginnen!",
 	YellP2		= "Sehr gut, meine Diener. Der Mut der Sterblichen scheint zu schwinden! Nun lasst uns sehen, wie sie sich gegen den wahren Herrscher des Schwarzfels behaupten werden!",
 	YellP3		= "Unmöglich! Erhebt Euch, meine Diener! Kämpft erneut für Euren Meister!",
 	YellShaman	= "Schamane, zeigt mir was eure Totems können!",
@@ -670,8 +674,6 @@ L:SetGeneralLocalization{
 	name = "Blutfürst Mandokir"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "Blutfürst Mandokir",
-	Ohgan		= "Ohgan",
 	GazeYell	= "Ich behalte Euch im Auge"
 }
 
@@ -682,12 +684,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "Rand des Wahnsinns"
-}
-L:SetMiscLocalization{
-	Hazzarah = "Hazza'rah",
-	Renataki = "Renataki",
-	Wushoolay = "Wushoolay",
-	Grilek = "Gri'lek"
 }
 
 -------------------
@@ -722,11 +718,11 @@ L:SetGeneralLocalization{
 }
 
 L:SetWarningLocalization{
-	WarnWhelpsSoon		= "Welpen erscheinen bald"
+	WarnWhelpsSoon			= "Welpen erscheinen bald"
 }
 
 L:SetTimerLocalization{
-	TimerWhelps	= "Welpen erscheinen"
+	TimerWhelps				= "Welpen"
 }
 
 L:SetOptionLocalization{
@@ -736,7 +732,7 @@ L:SetOptionLocalization{
 }
 
 L:SetMiscLocalization{
-   Breath = "%s atmet tief ein...",
+	Breath = "%s atmet tief ein...",
 	YellPull = "Was für ein Zufall. Normalerweise muss ich meinen Unterschlupf verlassen, um etwas zu essen.",
 	YellP2 = "Diese sinnlose Anstrengung langweilt mich. Ich werde Euch alle von oben verbrennen!",
 	YellP3 = "Mir scheint, dass Ihr noch eine Lektion braucht, sterbliche Wesen!",
@@ -778,7 +774,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "Kniet nieder, Wurm!"
+	Pull1					= "Kniet nieder, Wurm!",
+	Pull2					= "Ihr könnt euch nicht vor mir verstecken!",
+	Pull3					= "Tötet sie im Namen des Meisters!",
+	Pull4					= "Flieht, solange ihr noch könnt."
 })
 
 ---------------
@@ -796,7 +795,7 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	TimerSpider	= "Nächste Maexxnaspinnlinge"
+	TimerSpider	= "Maexxnaspinnlinge"
 })
 
 L:SetOptionLocalization({
@@ -834,6 +833,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull1				= "Sterbt, Eindringling!",
 	Pull2				= "Ehre unserem Meister!",
+	Pull3				= "Euer Leben ist verwirkt!",
 	AddsYell			= "Erhebt euch, Soldaten! Erhebt euch und kämpft erneut!"
 })
 
@@ -863,7 +863,8 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "Ihr gehört mir...",
-	Pull2				= "I see you..." --needs translation
+	Pull2				= "Ihr entgeht mir nicht...",
+	Pull3				= "Ihr seid.... als nächstes dran."
 })
 
 ---------------
@@ -892,9 +893,6 @@ L = DBM:GetModLocalization("PatchwerkVanilla")
 
 L:SetGeneralLocalization({
 	name = "Flickwerk"
-})
-
-L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
@@ -1006,7 +1004,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell			= "Ihr Narren habt euren eigenen Untergang heraufbeschworen.",
 	WarningWave1	= "%d %s",
 	WarningWave2	= "%d %s und %d %s",
 	WarningWave3	= "%d %s, %d %s und %d %s",
@@ -1032,6 +1029,7 @@ L:SetOptionLocalization({
 })
 
 L:SetTimerLocalization({
+	timerMark	= "Mal %d"
 })
 
 L:SetWarningLocalization({
@@ -1146,7 +1144,6 @@ L:SetWarningLocalization({
 L:SetTimerLocalization({
 	AffixTimer	= "Affix"
 })
-
 
 ---------------------------
 --  Season of Discovery  --
@@ -1300,7 +1297,6 @@ L:SetMiscLocalization{
 	Chicken		= "Huhn"
 }
 
-
 -----------------------------
 --  Mekgineer Thermaplugg  --
 -----------------------------
@@ -1326,8 +1322,6 @@ L = DBM:GetModLocalization("STTrashSoD")
 L:SetGeneralLocalization{
 	name = "Tempel Trash"
 }
-
-
 
 ---------------------------
 --  Atal'alarion  --
@@ -1384,6 +1378,7 @@ L = DBM:GetModLocalization("JammalanAndOgomSoD")
 L:SetGeneralLocalization({
 	name = "Jammal'an und Ogom"
 })
+
 ---------------------------
 --  Morphaz and Hazzas  --
 ---------------------------
@@ -1392,6 +1387,7 @@ L = DBM:GetModLocalization("MorphazandHazzasSoD")
 L:SetGeneralLocalization({
 	name = "Morphaz und Hazzas"
 })
+
 ---------------------------
 --  Shade of Eranikus  --
 ---------------------------

@@ -1,6 +1,5 @@
-[View Full Changelog](https://github.com/enderneko/Cell/compare/r266-release...09359db6c67b7e5dcf30c415fc4f56635e3ab32f)
+[View Full Changelog](https://github.com/enderneko/Cell/compare/r271-release...04e54adc8f74b1e46ff6f5a5c78eaeec88f30972)
 
-- Fix specID check on auto sepc change
-- Fix spell ranks for click-castings
-- Add esMX (thanks maylisdalan)
-- Update locales, fix missing phrases
+- Update debuffs for Throne of Thunder (#436, thanks @EkklesN)
+- Add Eternal Flame for "Healers"
+- Fix boss list for Throne of Thunder

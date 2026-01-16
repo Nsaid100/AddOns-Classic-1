@@ -48,7 +48,6 @@ hide(
     MultiBarBottomRight,
     MultiBarLeft,
     MultiBarRight,
-    PetActionBarFrame,
     StanceBarFrame
 )
 
@@ -136,16 +135,6 @@ if VerticalMultiBarsContainer then
             VerticalMultiBarsContainer:SetWidth(width)
         end
     )
-end
-
-if PossessBar then
-    PossessBar:UnregisterAllEvents()
-    hide(PossessBar)
-end
-
-if MainMenuBarVehicleLeaveButton then
-    MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
-    hide(MainMenuBarVehicleLeaveButton)
 end
 
 -- set the stock action buttons to hidden by default

@@ -62,7 +62,7 @@ L:SetOptionLocalization{
 	WarnDismember	= DBM_CORE_L.AUTO_ANNOUNCE_OPTIONS.spell:format(96)
 }
 L:SetMiscLocalization{
-	PursueEmote 	= " pose ses yeux sur "
+	PursueEmote 	= "pose ses yeux sur"
 }
 
 -------------
@@ -193,10 +193,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "Empereurs jumeaux"
-}
-L:SetMiscLocalization{
-	Veklor = "Empereur Vek'lor",
-	Veknil = "Empereur Vek'nilash"
 }
 
 ------------
@@ -368,8 +364,6 @@ L:SetGeneralLocalization{
 	name = "Seigneur sanglant Mandokir"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "Seigneur sanglant Mandokir",
-	Ohgan		= "Ohgan",
 	GazeYell	= "je vous ai à l'œil"
 }
 
@@ -380,12 +374,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "Frontière de la folie"
-}
-L:SetMiscLocalization{
-	Hazzarah = "Hazza'rah",
-	Renataki = "Renataki",
-	Wushoolay = "Wushoolay",
-	Grilek = "Gri'lek"
 }
 
 -------------------
@@ -480,6 +468,8 @@ L:SetGeneralLocalization{
 ----------------
 --  Ebonroc and Flamegor  --
 ----------------
+L = DBM:GetModLocalization("EbonrocandFlamegor")
+
 L:SetGeneralLocalization{
 	name = "Rochébène et Flamegor"
 }
@@ -765,17 +755,17 @@ L:SetGeneralLocalization{
 }
 
 L:SetWarningLocalization{
-	WarnWhelpsSoon		= "Les Jeunes dragonnets onyxien arrivent bientôt"
+	WarnWhelpsSoon			= "Les Jeunes dragonnets onyxien arrivent bientôt"
 }
 
 L:SetTimerLocalization{
-	TimerWhelps = "Arrivée des Jeunes dragonnets onyxien"
+	TimerWhelps 			= "Jeunes dragonnets onyxien"
 }
 
 L:SetOptionLocalization{
 	TimerWhelps				= "Afficher un chronomètre pour l'arrivée des Jeunes dragonnets onyxien",
 	WarnWhelpsSoon			= "Afficher une annonce avant l'arrivée des Jeunes dragonnets onyxien",
-	SoundWTF3				= "Joue des sons amusants du légendaire raid classic d'Onyxia"
+	SoundWTF3				= "Joue des sons amusants du légendaire raid classique d'Onyxia"
 }
 
 L:SetMiscLocalization{
@@ -821,7 +811,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "À genoux, vermisseau !"--Not actually pull trigger, but often said on pull
+	Pull1					= "À genoux, vermisseau !",
+	Pull2					= "Vous ne pouvez pas m'échapper !",
+	Pull3					= "Tuez-les au nom du maître !",
+	Pull4					= "Fuyez tant que vous le pouvez !"
 })
 ---------------
 --  Maexxna  --
@@ -838,7 +831,7 @@ L:SetWarningLocalization({
 })
 
 L:SetTimerLocalization({
-	TimerSpider			= "Arrivée des Jeunes araignées"
+	TimerSpider			= "Jeunes araignées"
 })
 
 L:SetOptionLocalization({
@@ -876,6 +869,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull1				= "Mourez, intrus !",
 	Pull2				= "Gloire au maître !",
+	Pull3				= "Vos vies ne valent plus rien !",
 	AddsYell			= "Levez-vous, soldats ! Levez-vous et combattez une fois encore !"
 })
 --------------------------
@@ -904,7 +898,8 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "Vous êtes à moi, maintenant.",
-	Pull2				= "Je vous vois…"
+	Pull2				= "Je vous vois…",
+	Pull3				= "Tu es… le suivant."
 })
 ----------------
 --  Loatheb  --
@@ -1049,7 +1044,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell				= "Dans votre folie, vous avez provoqué votre propre mort.",
 	WarningWave1		= "%d %s",
 	WarningWave2		= "%d %s et %d %s",
 	WarningWave3		= "%d %s, %d %s et %d %s",
@@ -1090,7 +1084,7 @@ L:SetWarningLocalization({
 L = DBM:GetModLocalization("SapphironVanilla")
 
 L:SetGeneralLocalization({
-	name = "Sapphiron"
+	name = "Saphiron"
 })
 
 L:SetOptionLocalization({

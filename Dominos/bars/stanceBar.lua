@@ -1,5 +1,3 @@
-if not StanceBar then return end
-
 --------------------------------------------------------------------------------
 -- Stance bar
 -- Lets you move around the bar for displaying forms/stances/etc
@@ -11,18 +9,18 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 -- test to see if the player has a stance bar
 -- not the best looking, but I also don't need to keep it after I do the check
 if not ({
-    DEATHKNIGHT = Addon:IsBuild('wrath'),
+    DEATHKNIGHT = Addon:IsBuild('mists', 'cata', 'wrath'),
     DEMONHUNTER = false,
     DRUID = true,
     EVOKER = true,
-    HUNTER = false,
+    HUNTER = Addon:IsBuild('mists', 'cata'),
     MAGE = false,
-    MONK = false,
+    MONK = Addon:IsBuild('mists'),
     PALADIN = true,
-    PRIEST = Addon:IsBuild('retail', 'wrath'),
+    PRIEST = Addon:IsBuild('retail', 'mists', 'cata', 'wrath'),
     ROGUE = true,
     SHAMAN = false,
-    WARLOCK = Addon:IsBuild('wrath'),
+    WARLOCK = Addon:IsBuild('mists', 'cata', 'wrath'),
     WARRIOR = true,
 })[UnitClassBase('player')] then
     return
@@ -32,52 +30,50 @@ end
 -- Button setup
 --------------------------------------------------------------------------------
 
-local function stanceButton_OnCreate(button)
-    -- tag with the default stance button
-    button:SetAttribute("commandName", "SHAPESHIFTBUTTON" .. button:GetID())
+local StanceButtons = setmetatable({}, {
+    __index = function(self, index)
+        local button = CreateFrame('CheckButton', ('%sStanceButton%d'):format(AddonName, index), nil, 'StanceButtonTemplate', index)
 
-    -- turn off cooldown edges
-    button.cooldown:SetDrawEdge(false)
+        -- tag with the default stance button binding id
+        button:SetAttribute("commandName", 'SHAPESHIFTBUTTON' .. index)
 
-    -- turn off constant usability updates
-    button:SetScript("OnUpdate", nil)
+        -- turn off cooldown edges
+        button.cooldown:SetDrawEdge(false)
 
-    -- register mouse clicks
-    button:EnableMouseWheel(true)
+        -- turn off constant usability updates
+        button:SetScript("OnUpdate", nil)
 
-    -- apply hooks for quick binding
-    Addon.BindableButton:AddQuickBindingSupport(button)
-end
+        -- register mouse clicks
+        button:EnableMouseWheel(true)
 
-local function getOrCreateStanceButton(id)
-    local name = ('%sStanceButton%d'):format(AddonName, id)
+        if button.SlotBackground then
+            button.SlotBackground:Hide()
+        end
 
-    local button = _G[name]
+        -- apply hooks for quick binding
+        Addon.BindableButton:AddQuickBindingSupport(button)
 
-    if not button then
-        button = CreateFrame('CheckButton', name, nil, 'StanceButtonTemplate', id)
+        self[index] = button
 
-        stanceButton_OnCreate(button)
+        return button
     end
-
-    return button
-end
+})
 
 --------------------------------------------------------------------------------
 -- Bar setup
 --------------------------------------------------------------------------------
 
-local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
+local DominosStanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
-function StanceBar:New()
-    return StanceBar.proto.New(self, 'class')
+function DominosStanceBar:New()
+    return DominosStanceBar.proto.New(self, 'class')
 end
 
-function StanceBar:GetDisplayName()
+function DominosStanceBar:GetDisplayName()
     return L.ClassBarDisplayName
 end
 
-function StanceBar:GetDefaults()
+function DominosStanceBar:GetDefaults()
     return {
         point = 'BOTTOM',
 		x = 371,
@@ -87,44 +83,41 @@ function StanceBar:GetDefaults()
     }
 end
 
-function StanceBar:NumButtons()
+function DominosStanceBar:NumButtons()
     return GetNumShapeshiftForms() or 0
 end
 
-function StanceBar:AcquireButton(index)
-    return getOrCreateStanceButton(index)
+function DominosStanceBar:AcquireButton(index)
+    return StanceButtons[index]
 end
 
-function StanceBar:OnAttachButton(button)
+function DominosStanceBar:OnAttachButton(button, index)
     button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
-    button:Show()
+    button:SetShown(index <= (GetNumShapeshiftForms() or 0))
 
     Addon:GetModule('ButtonThemer'):Register(button, L.ClassBarDisplayName)
     Addon:GetModule('Tooltips'):Register(button)
 end
 
-function StanceBar:OnDetachButton(button)
+function DominosStanceBar:OnDetachButton(button)
     Addon:GetModule('ButtonThemer'):Unregister(button, L.ClassBarDisplayName)
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
-function StanceBar:UpdateActions()
-	for i, button in pairs(self.buttons) do
-        local texture, isActive, isCastable = GetShapeshiftFormInfo(i)
+function DominosStanceBar:UpdateActions()
+	for index, button in pairs(self.buttons) do
+        local texture, isActive, isCastable = GetShapeshiftFormInfo(index)
 
         button:SetAlpha(texture and 1 or 0)
-
-        local icon = button.icon
-
-        icon:SetTexture(texture)
+        button.icon:SetTexture(texture)
 
         if isCastable then
-            icon:SetVertexColor(1.0, 1.0, 1.0)
+            button.icon:SetVertexColor(1.0, 1.0, 1.0)
         else
-            icon:SetVertexColor(0.4, 0.4, 0.4)
+            button.icon:SetVertexColor(0.4, 0.4, 0.4)
         end
 
-        local start, duration, enable = GetShapeshiftFormCooldown(i)
+        local start, duration, enable = GetShapeshiftFormCooldown(index)
         if enable and enable ~= 0 and start > 0 and duration > 0 then
             button.cooldown:SetCooldown(start, duration)
         else
@@ -136,7 +129,7 @@ function StanceBar:UpdateActions()
 end
 
 -- binding text
-function StanceBar:SetShowBindingText(show)
+function DominosStanceBar:SetShowBindingText(show)
     show = show and true
 
     if show == Addon.db.profile.showBindingText then
@@ -150,7 +143,7 @@ function StanceBar:SetShowBindingText(show)
     end
 end
 
-function StanceBar:ShowingBindingText()
+function DominosStanceBar:ShowingBindingText()
     local result = self.sets.showBindingText
 
     if result == nil then
@@ -160,7 +153,7 @@ function StanceBar:ShowingBindingText()
     return result
 end
 
-function StanceBar:OnCreateMenu(menu)
+function DominosStanceBar:OnCreateMenu(menu)
     local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
     local layoutPanel = menu:NewPanel(L.Layout)
@@ -182,7 +175,7 @@ function StanceBar:OnCreateMenu(menu)
 end
 
 -- export
-Addon.StanceBar = StanceBar
+Addon.StanceBar = DominosStanceBar
 
 --------------------------------------------------------------------------------
 -- Module
@@ -191,7 +184,7 @@ Addon.StanceBar = StanceBar
 local StanceBarModule = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
 function StanceBarModule:Load()
-    self.bar = StanceBar:New()
+    self.bar = DominosStanceBar:New()
 
     self:RegisterEvent("PLAYER_ENTERING_WORLD", 'UpdateNumForms')
     self:RegisterEvent("PLAYER_REGEN_ENABLED", 'UpdateNumForms')
@@ -207,6 +200,24 @@ function StanceBarModule:Unload()
     if self.bar then
         self.bar:Free()
 		self.bar = nil
+    end
+end
+
+function StanceBarModule:OnFirstLoad()
+    if StanceBar then
+        (StanceBar.HideBase or StanceBar.Hide)(StanceBar)
+        StanceBar:SetParent(Addon.ShadowUIParent)
+        StanceBar:UnregisterAllEvents()
+
+        for _, button in pairs(StanceBar.actionButtons) do
+            button:UnregisterAllEvents()
+            button:SetAttributeNoHandler("statehidden", true)
+            button:Hide()
+        end
+
+        -- Don't wipe the action buttons of the stance bar - the standard UI
+        -- accesses buttons directly in its code
+        -- table.wipe(StanceBar.actionButtons)
     end
 end
 

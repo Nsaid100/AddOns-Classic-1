@@ -1,7 +1,6 @@
 # Syndicator
 
-## [246](https://github.com/TheMouseNest/Syndicator/tree/246) (2025-10-29)
-[Full Changelog](https://github.com/TheMouseNest/Syndicator/compare/245...246) 
+## [252](https://github.com/TheMouseNest/Syndicator/tree/252) (2025-12-08)
+[Full Changelog](https://github.com/TheMouseNest/Syndicator/compare/251...252) 
 
-- MoP: Update toc for 5.5.2  
-- Fixes for latest Midnight alpha  
+- [Fixes #583] Classic: Fix stat changing English translations in China's Titan  

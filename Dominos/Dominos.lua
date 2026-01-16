@@ -69,6 +69,10 @@ function Addon:OnEnable()
     self:RegisterEvent('UPDATE_BINDINGS')
     self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
 
+    if C_HouseEditor then
+        self:RegisterEvent('HOUSE_EDITOR_MODE_CHANGED')
+    end
+
     self:Load()
 end
 
@@ -98,6 +102,12 @@ end
 function Addon:UPDATE_BINDINGS()
     self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
 
+    if not InCombatLockdown() then
+        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+    end
+end
+
+function Addon:HOUSE_EDITOR_MODE_CHANGED()
     if not InCombatLockdown() then
         self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
     end
@@ -266,7 +276,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
-            useOverrideUI = not self:IsBuild('classic'),
+            useOverrideUI = not self:IsBuild('classic', 'bcc'),
 
             ab = {
                 count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
@@ -886,6 +896,10 @@ function Addon:IsBuild(...)
     return false
 end
 
+function Addon:IsAfterMidnight()
+    return select(4, GetBuildInfo()) >= 120000
+end
+
 function Addon.OnLaunch(_, button)
     if button == 'LeftButton' then
         if IsShiftKeyDown() then
@@ -898,3 +912,5 @@ function Addon.OnLaunch(_, button)
     end
 end
 
+-- expose Dominos as a global
+_G[AddonName] = Addon

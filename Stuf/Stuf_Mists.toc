@@ -1,8 +1,8 @@
-## Interface: 50502
+## Interface: 50503
 ## Title: Stuf Unit Frames
 ## Author: TotalPackage
 ## Notes: Main unitframes replacement. Assembly optional.
-## Version: 4.4 Fix3
+## Version: 5.2
 
 ## SavedVariables: StufDB
 ## SavedVariablesPerCharacter: StufCharDB

@@ -7,6 +7,34 @@ local time = time
 -- Debug mode variable (global)
 DEBUG_MODE = false
 
+-- API availability checks for Classic Era compatibility
+local function SafeC_Seasons()
+    -- Use rawget to safely check for globals without triggering lint errors
+    local seasonsTable = rawget(_G, "C_Seasons")
+    if seasonsTable and type(seasonsTable.HasActiveSeason) == "function" then
+        return seasonsTable
+    end
+    
+    -- Return a safe fallback for Classic Era
+    return {
+        HasActiveSeason = function() return false end,
+        GetActiveSeason = function() return nil end
+    }
+end
+
+local function SafeEnumSeasonID()
+    -- Use rawget to safely check for globals without triggering lint errors
+    local enumTable = rawget(_G, "Enum")
+    if enumTable and enumTable.SeasonID and enumTable.SeasonID.Placeholder then
+        return enumTable.SeasonID
+    end
+    
+    -- Return a safe fallback for Classic Era
+    return {
+        Placeholder = 0
+    }
+end
+
 CALENDAR_INVITESTATUS_INFO = {
 	["UNKNOWN"] = {
 		name		= UNKNOWN,
@@ -87,14 +115,16 @@ local state = {
 	presentDate={
 		year=currentCalendarTime.year,
 		month=currentCalendarTime.month,
-		day=currentCalendarTime.day
+		day=currentCalendarTime.monthDay
 	},
 	currentEventIndex=0,
 	currentMonthOffset=0
 }
 
-local isClassicEra = not C_Seasons.HasActiveSeason()
-local isSoD = C_Seasons.HasActiveSeason() and (C_Seasons.GetActiveSeason() == Enum.SeasonID.Placeholder) -- "Placeholder" = SoD
+local SeasonsAPI = SafeC_Seasons()
+local SeasonID = SafeEnumSeasonID()
+local isClassicEra = not SeasonsAPI.HasActiveSeason()
+local isSoD = SeasonsAPI.HasActiveSeason() and (SeasonsAPI.GetActiveSeason() == SeasonID.Placeholder) -- "Placeholder" = SoD
 
 CALENDAR_FILTER_BATTLEGROUND = L.Options[localeString]["CALENDAR_FILTER_BATTLEGROUND"];
 CALENDAR_FILTER_WORLDBUFFS = L.Options[localeString]["CALENDAR_FILTER_WORLDBUFFS"];
@@ -347,6 +377,9 @@ function newEventGetTextures(eventType)
 	return {}
 end
 
+-- Track if we've already printed holiday debug info this session
+local holidayDebugPrinted = false
+
 function stubbedGetNumDayEvents(monthOffset, monthDay)
 	-- Stubbing C_Calendar.getNumDayEvents to return fake events
 	local originalEventCount = C_Calendar.GetNumDayEvents(monthOffset, monthDay)
@@ -360,10 +393,6 @@ function stubbedGetNumDayEvents(monthOffset, monthDay)
 
 	local holidays = GetClassicHolidays()
 	
-	if DEBUG_MODE then
-		print("ClassicCalendar Debug: Number of holidays:", #holidays)
-	end
-	
 	-- Limit processing to prevent script timeout
 	if #holidays > 500 then
 		if DEBUG_MODE then
@@ -375,7 +404,10 @@ function stubbedGetNumDayEvents(monthOffset, monthDay)
 		end
 	end
 	
-	if DEBUG_MODE then
+	-- Only print holiday debug once per session to avoid spam (data is cached in GetClassicHolidays)
+	if DEBUG_MODE and not holidayDebugPrinted then
+		print("ClassicCalendar Debug: Number of holidays:", #holidays)
+		holidayDebugPrinted = true
 		-- Only show first 10 and last 10 holidays for debugging
 		for i = 1, math.min(10, #holidays) do
 			local holiday = holidays[i]
@@ -635,6 +667,40 @@ function SlashCmdList.CALDEBUG(_msg, _editBox)
 	print("ClassicCalendar Debug Mode: " .. (DEBUG_MODE and "ON" or "OFF"))
 end
 
+-- Slash command /calwbclear to clear all WorldBuff tables (nuclear option for corruption)
+
+SLASH_CALWBCLEAR1 = '/calwbclear'
+
+function SlashCmdList.CALWBCLEAR(_msg, _editBox)
+	if _msg == "confirm" then
+		WorldBuffRendData = {}
+		WorldBuffHakkarData = {}
+		WorldBuffOnyxiaData = {}
+		WorldBuffNefarianData = {}
+		print("ClassicCalendar: All WorldBuff tables cleared locally. /reload to save.")
+	elseif _msg == "guild" then
+		-- Guild-wide wipe (officer only)
+		if ClassicCalendarDataSync and ClassicCalendarDataSync.SendGuildWipe then
+			ClassicCalendarDataSync:SendGuildWipe()
+		else
+			print("ClassicCalendar: DataSync not available")
+		end
+	elseif _msg == "status" then
+		-- Show wipe timestamp status
+		local timestamp = WorldBuffLastWipeTimestamp or 0
+		if timestamp > 0 then
+			print("ClassicCalendar: Last wipe timestamp: " .. timestamp .. " (" .. date("%Y-%m-%d %H:%M:%S", timestamp) .. ")")
+		else
+			print("ClassicCalendar: No wipe has been performed (timestamp: 0)")
+		end
+	else
+		print("ClassicCalendar: Clear WorldBuff data:")
+		print("  /calwbclear confirm - Clear your local data only")
+		print("  /calwbclear guild - Clear data for entire guild (officer only)")
+		print("  /calwbclear status - Show last wipe timestamp")
+	end
+end
+
 -- Slash command /caldarkmoon to check Darkmoon Faire status
 
 SLASH_CALDARKMOON1 = '/caldarkmoon'
@@ -647,7 +713,7 @@ function SlashCmdList.CALDARKMOON(_msg, _editBox)
 	print("calendarShowDarkmoon CVar:", darkmoonCVar)
 	
 	-- Check if we're in SoD
-	local isSoD = C_Seasons.HasActiveSeason() and (C_Seasons.GetActiveSeason() == Enum.SeasonID.Placeholder)
+	local isSoD = SeasonsAPI.HasActiveSeason() and (SeasonsAPI.GetActiveSeason() == SeasonID.Placeholder)
 	print("Is Season of Discovery:", tostring(isSoD))
 	print("Note: Currently using Classic schedule for both Classic and SoD")
 	
@@ -675,8 +741,8 @@ function SlashCmdList.CALDARKMOON(_msg, _editBox)
 			local startTime = time({year=event.startDate.year, month=event.startDate.month, day=event.startDate.day})
 			local endTime = time({year=event.endDate.year, month=event.endDate.month, day=event.endDate.day})
 			local startDayName = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
-			local startDayOfWeek = os.date("*t", startTime).wday
-			local endDayOfWeek = os.date("*t", endTime).wday
+			local startDayOfWeek = date("*t", startTime).wday
+			local endDayOfWeek = date("*t", endTime).wday
 			
 			print(string.format("Event %d: %s", i, event.name))
 			print(string.format("  Opens:  %s %d/%d/%d", 
@@ -692,11 +758,11 @@ function newGetHolidayInfo(offsetMonths, monthDay, eventIndex)
 	-- Because classic doesn't return any events, we're completely replacing this function
 	local event = stubbedGetDayEvent(offsetMonths, monthDay, eventIndex)
 
-	local eventName = event.title
+	local eventName = event and event.title or ""
 	local eventDesc
 
 	for _, holiday in next, GetClassicHolidays() do
-		if event.title == holiday.name then
+		if event and event.title and event.title == holiday.name then
 			eventDesc = holiday.description
 		end
 	end
@@ -706,8 +772,8 @@ function newGetHolidayInfo(offsetMonths, monthDay, eventIndex)
 	else
 		return {
 			name=eventName,
-			startTime=event.startTime,
-			endTime=event.endTime,
+			startTime=event and event.startTime or nil,
+			endTime=event and event.endTime or nil,
 			description=eventDesc
 		}
 	end
@@ -745,9 +811,9 @@ function stubbedOpenEvent(monthOffset, day, eventIndex)
 		C_Calendar.OpenEvent(monthOffset, day, eventIndex)
 	else
 		local injectedEvent = stubbedGetDayEvent(monthOffset, day, eventIndex)
-		if injectedEvent.calendarType == "HOLIDAY" then
+		if injectedEvent and injectedEvent.calendarType == "HOLIDAY" then
 			CalendarFrame_ShowEventFrame(CalendarViewHolidayFrame)
-		elseif injectedEvent.calendarType == "RAID_RESET" then
+		elseif injectedEvent and injectedEvent.calendarType == "RAID_RESET" then
 			CalendarFrame_ShowEventFrame(CalendarViewRaidFrame)
 		end
 	end
@@ -765,9 +831,9 @@ function stubbedGetRaidInfo(monthOffset, day, eventIndex)
 	else
 		local injectedRaidEvent = stubbedGetDayEvent(monthOffset, day, eventIndex)
 		return {
-			name=injectedRaidEvent.title,
+			name=injectedRaidEvent and injectedRaidEvent.title or "",
 			difficultyName="",
-			time=injectedRaidEvent.startTime
+			time=injectedRaidEvent and injectedRaidEvent.startTime or nil
 		}
 	end
 end
@@ -783,9 +849,17 @@ end
 
 -- Replacement for CALENDAR_EVENT_ALARM since it never fires
 local function AlarmUpcomingEvents()
-	local currentDate = C_DateAndTime.GetCurrentCalendarTime()
-	currentDate.min = currentDate.minute
-	local today = currentDate.monthDay
+	local currentCalendarDate = C_DateAndTime.GetCurrentCalendarTime()
+	-- Convert CalendarTime to standard date table
+	local currentDate = {
+		year = currentCalendarDate.year,
+		month = currentCalendarDate.month,
+		day = currentCalendarDate.monthDay,
+		hour = currentCalendarDate.hour,
+		min = currentCalendarDate.minute,
+		sec = 0
+	}
+	local today = currentCalendarDate.monthDay
 	local currentTime = time(currentDate)
 	local numEvents = C_Calendar.GetNumDayEvents(0, today)
 
@@ -802,9 +876,17 @@ local function AlarmUpcomingEvents()
 			Enum.CalendarStatus.Confirmed,
 			Enum.CalendarStatus.Tentative
 		}
-		if (event and event.calendarType == "PLAYER" and alarmInviteStatuses[event.inviteStatus] ~= nil) then
-			event.startTime.min = event.startTime.minute
-			local eventTime = time(event.startTime)
+		if (event and event.calendarType == "PLAYER" and event.startTime and alarmInviteStatuses[event.inviteStatus] ~= nil) then
+			-- Convert CalendarTime to standard date table
+			local eventStartTime = {
+				year = event.startTime.year,
+				month = event.startTime.month,
+				day = event.startTime.monthDay,
+				hour = event.startTime.hour,
+				min = event.startTime.minute,
+				sec = 0
+			}
+			local eventTime = time(eventStartTime)
 
 			local alarmMult = 60
 			if CCConfig.AlarmUnit == "Minute" then

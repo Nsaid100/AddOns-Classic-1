@@ -1,10 +1,8 @@
 # WIM
 
-## [3.12.15](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/tree/3.12.15) (2025-10-14)
-[Full Changelog](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/compare/3.12.14...3.12.15) [Previous Releases](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/releases)
+## [3.14.1](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/tree/3.14.1) (2025-12-11)
+[Full Changelog](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/compare/3.14.0...3.14.1) [Previous Releases](https://github.com/Legacy-of-Sylvanaar/wow-instant-messenger/releases)
 
-- TOC Bump  
-- Merge pull request #127 from anon1231823/patch-26  
-    Update esES.lua  
-- Update esES.lua  
-- Update esES.lua  
+- Fix history preview from loading after the first message is received. #167  
+- Remove debugging output.  
+- If BNName is retrieve after an event, Window will update itself accordingly.  

@@ -212,6 +212,10 @@ end
 
 
 function applyStringModifiers(str, chatDisplay)
+	if (IsSecretValue(str)) then
+		return str;
+	end
+
 	for i=1, #StringModifiers do
 		str = StringModifiers[i](str, chatDisplay);
 	end
@@ -923,6 +927,9 @@ local function instantiateWindow(obj)
 
     -- Addmessage functions
     obj.AddMessage = function(self, msg, ...)
+		-- check that msg exists
+		if not msg then return end
+
 		msg = applyStringModifiers(msg, self.widgets.chat_display);
 		self.widgets.chat_display:AddMessage(msg, ...);
         updateScrollBars(self);
@@ -1265,6 +1272,20 @@ local function instantiateWindow(obj)
 		end
 	end
 
+	-- update/swap window name
+	obj.Rename = function (self, name)
+		for i=1,#WindowSoupBowl.windows do
+			if(WindowSoupBowl.windows[i].user == self.theUser) then
+				WindowSoupBowl.windows[i].user = name;
+				break;
+			end
+		end
+
+		self.user = name
+		self.theUser = name
+		self.widgets.from:SetText(GetReadableName(name))
+	end
+
 	-- at this state the message is no longer classified as a new window, reset flag.
 	obj.isNew = false;
         CallModuleFunction("OnWindowPopped", self);
@@ -1479,7 +1500,7 @@ end
 
 -- Create (recycle if available) message window. Returns object.
 -- (wtype == "whisper", "chat" or "w2w")
-local function createWindow(userName, wtype)
+local function createWindow(userName, wtype, onBeforeReturn)
     if(type(userName) ~= "string") then
         return;
     end
@@ -1508,6 +1529,9 @@ local function createWindow(userName, wtype)
         obj.type = wtype;
         loadWindowDefaults(obj); -- clear contents of window and revert back to it's initial state.
         dPrint("Window recycled '"..obj:GetName().."'");
+		if (type(onBeforeReturn) == "function") then
+			onBeforeReturn(obj);
+		end
 		CallModuleFunction("OnWindowCreated", obj);
         table.insert(windowsByAge, obj);
         table.sort(windowsByAge, function(a, b) return a.age > b.age; end);
@@ -1532,7 +1556,10 @@ local function createWindow(userName, wtype)
         -- f.icon.theUser = userName;
         loadWindowDefaults(f);
         dPrint("Window created '"..f:GetName().."'");
-	CallModuleFunction("OnWindowCreated", f);
+		if (type(onBeforeReturn) == "function") then
+			onBeforeReturn(f);
+		end
+		CallModuleFunction("OnWindowCreated", f);
         table.insert(windowsByAge, f);
         table.sort(windowsByAge, function(a, b) return a.age > b.age; end);
         return f;
@@ -1558,7 +1585,7 @@ local function destroyWindow(userNameOrObj)
     if(type(userNameOrObj) == "string") then
         obj, index = getWindowByName(userNameOrObj);
     else
-	obj, index = getWindowByName(userNameOrObj.theUser);
+		obj, index = getWindowByName(userNameOrObj.theUser);
     end
 
     if(obj) then
@@ -1610,16 +1637,16 @@ function GetWindowSoupBowl()
     return WindowSoupBowl;
 end
 
-function CreateWhisperWindow(playerName)
-    return createWindow(playerName, "whisper");
+function CreateWhisperWindow(playerName, onBeforeReturn)
+    return createWindow(playerName, "whisper", onBeforeReturn);
 end
 
-function CreateChatWindow(chatName)
-    return createWindow(chatName, "chat");
+function CreateChatWindow(chatName, onBeforeReturn)
+    return createWindow(chatName, "chat", onBeforeReturn);
 end
 
-function CreateW2WWindow(chatName)
-    return createWindow(chatName, "w2w");
+function CreateW2WWindow(chatName, onBeforeReturn)
+    return createWindow(chatName, "w2w", onBeforeReturn);
 end
 
 function DestroyWindow(playerNameOrObject)
@@ -2022,15 +2049,27 @@ RegisterWidgetTrigger("chat_display", "whisper,chat,w2w,demo", "OnMouseUp", func
                 end
 	end);
 
+
+--ItemRef Definitions
+local registeredItemRef = {};
+function RegisterItemRefHandler(cmd, fun)
+    registeredItemRef[cmd] = fun;
+end
+
 local myself = _G.UnitName("player")
 RegisterWidgetTrigger("chat_display", "whisper,chat,w2w", "OnHyperlinkClick", function(self, link, text, button)
 	local t,n,i = string.split(":", link)
+
 	if n == myself then
 		return
     end
 
 	if t == 'player' then
-		_G.ChatFrame_OnHyperlinkShow(_G.DEFAULT_CHAT_FRAME, link, text, button);
+		if (_G.ChatFrameMixin and _G.ChatFrameMixin.OnHyperlinkClick) then
+			_G.ChatFrameMixin.OnHyperlinkClick(_G.DEFAULT_CHAT_FRAME, link, text, button);
+		else
+			_G.ChatFrame_OnHyperlinkShow(_G.DEFAULT_CHAT_FRAME, link, text, button);
+		end
 		return;
 	end
 
@@ -2075,12 +2114,19 @@ RegisterWidgetTrigger("chat_display", "whisper,chat,w2w", "OnHyperlinkClick", fu
 		return;
 	end
 
-	_G.ChatFrame_OnHyperlinkShow(self, link, text, button);
-	-- if link == "garrmission:weakauras" then
-	-- 		_G.SetItemRef(link, text, button, self);
-	-- else
-	-- 		_G.SetItemRef(link, text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""), button, self);
-	-- end
+	-- registered ItemRef handlers
+	for cmd, fun in pairs(registeredItemRef) do
+		if(string.match(link, "^"..cmd..":")) then
+			fun(link);
+			return;
+		end
+	end
+
+	if (_G.ChatFrameMixin and _G.ChatFrameMixin.OnHyperlinkClick) then
+		_G.ChatFrameMixin.OnHyperlinkClick(self, link, text, button);
+	else
+		_G.ChatFrame_OnHyperlinkShow(self, link, text, button);
+	end
 end);
 --RegisterWidgetTrigger("chat_display", "whisper,chat,w2w","OnMessageScrollChanged", function(self) updateScrollBars(self:GetParent()); end);
 
@@ -2116,7 +2162,11 @@ RegisterWidgetTrigger("msg_box", "whisper,chat,w2w,demo", "OnEnterPressed", func
 		if(strsub(self:GetText(), 1, 1) == "/") then
 			EditBoxInFocus = nil;
 			_G.ChatFrame1EditBox:SetText(self:GetText());
-			_G.ChatEdit_SendText(_G.ChatFrame1EditBox, 1);
+			if (_G.ChatFrameEditBoxBaseMixin and _G.ChatFrameEditBoxBaseMixin.SendText) then
+				_G.ChatFrameEditBoxBaseMixin.SendText(_G.ChatFrame1EditBox, 1);
+			else
+				_G.ChatEdit_SendText(_G.ChatFrame1EditBox, 1);
+			end
 			self:SetText("");
 			EditBoxInFocus = self;
 		else
@@ -2178,7 +2228,7 @@ RegisterWidgetTrigger("msg_box", "whisper,w2w", "OnTabPressed", function(self)
                 		local whisperTarget = win.isBN and win.toonName or win.theUser
                 		local chatType = win.isBN and "BN_WHISPER" or "WHISPER"
                 		-- Lookup the next whisper target
-                		local nextWhisperTarget = _G.ChatEdit_GetNextTellTarget(whisperTarget,chatType)
+                		local nextWhisperTarget = (_G.ChatFrameUtil and _G.ChatFrameUtil.GetNextTellTarget or _G.ChatEdit_GetNextTellTarget)(whisperTarget,chatType)
 
                 		if nextWhisperTarget ~= "" then
                 			win = GetWhisperWindowByUser(nextWhisperTarget);
@@ -2186,7 +2236,7 @@ RegisterWidgetTrigger("msg_box", "whisper,w2w", "OnTabPressed", function(self)
                 			win:Hide();
                 			win:Pop(true); -- force popup
                 			win.widgets.msg_box:SetFocus();
-                			_G.ChatEdit_SetLastTellTarget(nextWhisperTarget,chatType);
+                			(_G.ChatFrameUtil and _G.ChatFrameUtil.SetLastTellTarget or _G.ChatEdit_SetLastTellTarget)(nextWhisperTarget,chatType);
                 		end
                 end
 	end);

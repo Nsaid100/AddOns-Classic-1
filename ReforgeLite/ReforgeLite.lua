@@ -184,28 +184,38 @@ local StatAdditives = {
   end
 }
 
-local tooltipStatPrefix = "^%+([%d,]+)%s+"
-local function RatingStat (i, name_, tip_, long_, id_)
+local function Stat(options)
   return {
-    name = name_,
-    tip = tip_,
-    long = long_,
-    getter = function ()
-      local rating = GetCombatRating(id_)
-      if StatAdditives[id_] then
-        rating = StatAdditives[id_](rating)
+    name = options.name,
+    tooltipConstant = options.tooltipConstant,
+    tip = options.tip,
+    long = options.long,
+    getter = options.getter or function()
+      local rating = GetCombatRating(options.ratingId)
+      if StatAdditives[options.ratingId] then
+        rating = StatAdditives[options.ratingId](rating)
       end
       return rating
     end,
-    mgetter = function (method, orig)
-      return (orig and method.orig_stats and method.orig_stats[i]) or method.stats[i]
+    mgetter = options.mgetter or function(method, orig)
+      return (orig and method.orig_stats and method.orig_stats[options.statId]) or method.stats[options.statId]
     end,
-    tooltipPattern = tooltipStatPrefix .. long_
+    getTooltipPatterns = function(self)
+      local tooltipConst = _G[self.tooltipConstant or self.name]
+      if not tooltipConst then
+        return {}
+      end
+      return {
+        "^%+([%d,]+)%s*" .. tooltipConst .. "%s*$",
+        "^" .. tooltipConst .. "%s*%+([%d,]+)%s*$"
+      }
+    end
   }
 end
 
 local ITEM_STATS = {
-    {
+    Stat {
+      statId = statIds.SPIRIT,
       name = "ITEM_MOD_SPIRIT_SHORT",
       tip = SPELL_STAT5_NAME,
       long = ITEM_MOD_SPIRIT_SHORT,
@@ -216,16 +226,27 @@ local ITEM_STATS = {
         end
         return spirit
       end,
-      mgetter = function (method, orig)
-        return (orig and method.orig_stats and method.orig_stats[statIds.SPIRIT]) or method.stats[statIds.SPIRIT]
-      end,
-      tooltipPattern = tooltipStatPrefix .. ITEM_MOD_SPIRIT_SHORT
     },
-    RatingStat (statIds.DODGE,   "ITEM_MOD_DODGE_RATING",         STAT_DODGE,     STAT_DODGE,           CR_DODGE),
-    RatingStat (statIds.PARRY,   "ITEM_MOD_PARRY_RATING",         STAT_PARRY,     STAT_PARRY,           CR_PARRY),
-    --RatingStat (statIds.HIT,     "ITEM_MOD_HIT_RATING",           HIT,            HIT,                  CR_HIT),
-    {
+    Stat {
+      statId = statIds.DODGE,
+      name = "ITEM_MOD_DODGE_RATING",
+      tooltipConstant = "ITEM_MOD_DODGE_RATING_SHORT",
+      tip = STAT_DODGE,
+      long = STAT_DODGE,
+      ratingId = CR_DODGE,
+    },
+    Stat {
+      statId = statIds.PARRY,
+      name = "ITEM_MOD_PARRY_RATING",
+      tooltipConstant = "ITEM_MOD_PARRY_RATING_SHORT",
+      tip = STAT_PARRY,
+      long = STAT_PARRY,
+      ratingId = CR_PARRY,
+    },
+    Stat {
+      statId = statIds.HIT,
       name = "ITEM_MOD_HIT_RATING",
+      tooltipConstant = "ITEM_MOD_HIT_RATING_SHORT",
       tip = HIT,
       long = ITEM_MOD_HIT_RATING_SHORT,
       getter = function()
@@ -235,31 +256,54 @@ local ITEM_STATS = {
         end
         return hit
       end,
-      mgetter = function (method, orig)
-        return (orig and method.orig_stats and method.orig_stats[statIds.HIT]) or method.stats[statIds.HIT]
-      end,
-      tooltipPattern = tooltipStatPrefix .. ITEM_MOD_HIT_RATING_SHORT
     },
-    RatingStat (statIds.CRIT,    "ITEM_MOD_CRIT_RATING",          CRIT_ABBR,      CRIT_ABBR,            CR_CRIT),
-    RatingStat (statIds.HASTE,   "ITEM_MOD_HASTE_RATING",         STAT_HASTE,     STAT_HASTE,           CR_HASTE),
-    RatingStat (statIds.EXP,     "ITEM_MOD_EXPERTISE_RATING",     EXPERTISE_ABBR, STAT_EXPERTISE,       CR_EXPERTISE),
-    RatingStat (statIds.MASTERY, "ITEM_MOD_MASTERY_RATING_SHORT", STAT_MASTERY,   STAT_MASTERY,         CR_MASTERY),
+    Stat {
+      statId = statIds.CRIT,
+      name = "ITEM_MOD_CRIT_RATING",
+      tooltipConstant = "ITEM_MOD_CRIT_RATING_SHORT",
+      tip = CRIT_ABBR,
+      long = CRIT_ABBR,
+      ratingId = CR_CRIT,
+    },
+    Stat {
+      statId = statIds.HASTE,
+      name = "ITEM_MOD_HASTE_RATING",
+      tooltipConstant = "ITEM_MOD_HASTE_RATING_SHORT",
+      tip = STAT_HASTE,
+      long = STAT_HASTE,
+      ratingId = CR_HASTE,
+    },
+    Stat {
+      statId = statIds.EXP,
+      name = "ITEM_MOD_EXPERTISE_RATING",
+      tooltipConstant = "ITEM_MOD_EXPERTISE_RATING_SHORT",
+      tip = EXPERTISE_ABBR,
+      long = STAT_EXPERTISE,
+      ratingId = CR_EXPERTISE,
+    },
+    Stat {
+      statId = statIds.MASTERY,
+      name = "ITEM_MOD_MASTERY_RATING_SHORT",
+      tip = STAT_MASTERY,
+      long = STAT_MASTERY,
+      ratingId = CR_MASTERY,
+    },
 }
 local ITEM_STAT_COUNT = #ITEM_STATS
 addonTable.itemStats, addonTable.itemStatCount = ITEM_STATS, ITEM_STAT_COUNT
 ReforgeLite.itemStats = ITEM_STATS
 
 local REFORGE_TABLE_BASE = 112
-local reforgeTable = {
-  {statIds.SPIRIT, statIds.DODGE}, {statIds.SPIRIT, statIds.PARRY}, {statIds.SPIRIT, statIds.HIT}, {statIds.SPIRIT, statIds.CRIT}, {statIds.SPIRIT, statIds.HASTE}, {statIds.SPIRIT, statIds.EXP}, {statIds.SPIRIT, statIds.MASTERY},
-  {statIds.DODGE, statIds.SPIRIT}, {statIds.DODGE, statIds.PARRY}, {statIds.DODGE, statIds.HIT}, {statIds.DODGE, statIds.CRIT}, {statIds.DODGE, statIds.HASTE}, {statIds.DODGE, statIds.EXP}, {statIds.DODGE, statIds.MASTERY},
-  {statIds.PARRY, statIds.SPIRIT}, {statIds.PARRY, statIds.DODGE}, {statIds.PARRY, statIds.HIT}, {statIds.PARRY, statIds.CRIT}, {statIds.PARRY, statIds.HASTE}, {statIds.PARRY, statIds.EXP}, {statIds.PARRY, statIds.MASTERY},
-  {statIds.HIT, statIds.SPIRIT}, {statIds.HIT, statIds.DODGE}, {statIds.HIT, statIds.PARRY}, {statIds.HIT, statIds.CRIT}, {statIds.HIT, statIds.HASTE}, {statIds.HIT, statIds.EXP}, {statIds.HIT, statIds.MASTERY},
-  {statIds.CRIT, statIds.SPIRIT}, {statIds.CRIT, statIds.DODGE}, {statIds.CRIT, statIds.PARRY}, {statIds.CRIT, statIds.HIT}, {statIds.CRIT, statIds.HASTE}, {statIds.CRIT, statIds.EXP}, {statIds.CRIT, statIds.MASTERY},
-  {statIds.HASTE, statIds.SPIRIT}, {statIds.HASTE, statIds.DODGE}, {statIds.HASTE, statIds.PARRY}, {statIds.HASTE, statIds.HIT}, {statIds.HASTE, statIds.CRIT}, {statIds.HASTE, statIds.EXP}, {statIds.HASTE, statIds.MASTERY},
-  {statIds.EXP, statIds.SPIRIT}, {statIds.EXP, statIds.DODGE}, {statIds.EXP, statIds.PARRY}, {statIds.EXP, statIds.HIT}, {statIds.EXP, statIds.CRIT}, {statIds.EXP, statIds.HASTE}, {statIds.EXP, statIds.MASTERY},
-  {statIds.MASTERY, statIds.SPIRIT}, {statIds.MASTERY, statIds.DODGE}, {statIds.MASTERY, statIds.PARRY}, {statIds.MASTERY, statIds.HIT}, {statIds.MASTERY, statIds.CRIT}, {statIds.MASTERY, statIds.HASTE}, {statIds.MASTERY, statIds.EXP},
-}
+
+local reforgeTable = {}
+for srcIdx in ipairs(ITEM_STATS) do
+  for dstIdx in ipairs(ITEM_STATS) do
+    if srcIdx ~= dstIdx then
+      tinsert(reforgeTable, {srcIdx, dstIdx})
+    end
+  end
+end
+
 ReforgeLite.reforgeTable = reforgeTable
 
 local reforgeIdStringCache = setmetatable({}, {
@@ -312,7 +356,7 @@ local tooltipStatsCache = setmetatable({}, {
 ---Uses Blizzard's GetItemStats for base items, tooltip scanning for upgraded items
 ---Only scans for reforge-able secondary stats (Spirit, Dodge, Parry, Hit, Crit, Haste, Expertise, Mastery)
 ---Reverses any active reforge to return original item stats
----@param itemInfo table Item information with link, itemId, ilvl, upgradeLevel, slotId, reforge
+---@param itemInfo table Item information with link, itemId, ilvl, slotId, reforge
 ---@return table<string, number> stats Table of stat names to values (before reforge)
 function addonTable.GetItemStatsFromTooltip(itemInfo)
   if not (itemInfo or {}).link then return {} end
@@ -344,12 +388,19 @@ function addonTable.GetItemStatsFromTooltip(itemInfo)
     if region.GetText then
       local text = region:GetText()
       if text and text ~= "" then
+        local cleanText = strtrim((text:gsub("%b()", "")))
         for _, statInfo in ipairs(ITEM_STATS) do
           if not stats[statInfo.name] then
-            local value = text:match(statInfo.tooltipPattern)
+            local value
+            for _, pattern in ipairs(statInfo:getTooltipPatterns()) do
+              value = cleanText:match(pattern)
+              if value then
+                break
+              end
+            end
             if value then
               foundStats = foundStats + 1
-              stats[statInfo.name] = tonumber((value:gsub(",", "")))
+              stats[statInfo.name] = tonumber((value:gsub("[^%d]", "")))
               break
             end
           end
@@ -618,6 +669,11 @@ function ReforgeLite:GetFrameY (frame)
   return offs
 end
 
+local function FormatNumber(num)
+  if num == 0 then return num end
+  return (num > 0 and "+" or "-") .. FormatLargeNumber(abs(num))
+end
+
 local function SetTextDelta (text, value, cur, override)
   override = override or (value - cur)
   if override == 0 then
@@ -627,7 +683,7 @@ local function SetTextDelta (text, value, cur, override)
   else
     text:SetTextColor(addonTable.COLORS.red:GetRGB())
   end
-  text:SetFormattedText(value - cur > 0 and "+%s" or "%s", value - cur)
+  text:SetText(FormatNumber(value - cur))
 end
 
 ------------------------------------------------------------------------
@@ -884,11 +940,14 @@ function ReforgeLite:CreateItemTable ()
     self.itemTable:EnableColumnAutoWidth(i)
   end
 
-  self.itemLevel = self:CreateFontString (nil, "OVERLAY", "GameFontNormal")
+  self.itemLevel = self:CreateFontString (nil, "OVERLAY", "GameFontWhite")
   self.itemLevel:SetPoint ("BOTTOMRIGHT", self.itemTable, "TOPRIGHT", 0, 8)
-  self.itemLevel:SetTextColor(addonTable.COLORS.gold:GetRGB())
   self:RegisterEvent("PLAYER_AVG_ITEM_LEVEL_UPDATE")
   self:PLAYER_AVG_ITEM_LEVEL_UPDATE()
+
+  self.itemLevelLabel = self:CreateFontString (nil, "OVERLAY", "GameFontNormal")
+  self.itemLevelLabel:SetPoint ("BOTTOMRIGHT", self.itemLevel, "BOTTOMLEFT", -2, 0)
+  self.itemLevelLabel:SetFormattedText(STAT_FORMAT, STAT_AVERAGE_ITEM_LEVEL)
 
   self.itemLockHelpButton = GUI:CreateHelpButton(self, L["The Item Table shows your currently equipped gear and their stats.\n\nEach row represents one equipped item. Only stats present on your gear are shown as columns.\n\nAfter computing, items being reforged show:\n• Red numbers: Stat being reduced\n• Green numbers: Stat being added\n\nClick an item icon to lock/unlock it. Locked items (shown with a lock icon) are ignored during optimization."], { scale = 0.5 })
 
@@ -988,7 +1047,15 @@ function ReforgeLite:AddCapPoint (i, loading)
       self:RefreshMethodStats ()
     end,
     menuItemHidden = function(info)
-      return info.category and info.category ~= self.statCaps[i].stat.selectedValue
+      if info.category and info.category ~= self.statCaps[i].stat.selectedValue then
+        return true
+      end
+      if info.classID and info.classID ~= addonTable.playerClass then
+        return true
+      end
+      if info.specID and info.specID ~= self.specID then
+        return true
+      end
     end
   })
   local value = GUI:CreateEditBox (self.statCaps, 40, 30, 0, function (val)
@@ -1121,7 +1188,7 @@ function ReforgeLite:RefreshCaps()
 end
 function ReforgeLite:CollapseStatCaps()
   local caps = CopyTable(self.pdb.caps)
-  table.sort(caps, function(a,b)
+  sort(caps, function(a,b)
     local aIsNone = a.stat == 0 and 1 or 0
     local bIsNone = b.stat == 0 and 1 or 0
     return aIsNone < bIsNone
@@ -1665,7 +1732,7 @@ function ReforgeLite:RefreshMethodStats()
     for statId, v in ipairs (ITEM_STATS) do
       local cell = statId - 1
       local mvalue = v.mgetter (self.pdb.method)
-      self.methodStats:SetCellText(cell, 1, mvalue)
+      self.methodStats:SetCellText(cell, 1, FormatLargeNumber(mvalue))
       local override
       mvalue = v.mgetter (self.pdb.method, true)
       local value = v.getter ()
@@ -1681,20 +1748,6 @@ end
 function ReforgeLite:UpdateContentSize ()
   self.content:SetHeight (-self:GetFrameY (self.lastElement))
   RunNextFrame(function() self:FixScroll() end)
-end
-local function GetItemUpgradeLevel(item)
-    if item:IsItemEmpty()
-    or not item:HasItemLocation()
-    or item:GetItemQuality() < Enum.ItemQuality.Rare
-    or item:GetCurrentItemLevel() < 458 then
-        return 0, item:GetCurrentItemLevel()
-    end
-    local originalIlvl = C_Item.GetDetailedItemLevelInfo(item:GetItemID())
-    if not originalIlvl then
-        return 0, item:GetCurrentItemLevel()
-    end
-
-    return (item:GetCurrentItemLevel() - originalIlvl) / 4, originalIlvl
 end
 
 ---Updates the item table with current equipped gear
@@ -1713,14 +1766,12 @@ function ReforgeLite:UpdateItems()
       v.texture:SetTexture(v.slotTexture)
       v.quality:SetVertexColor(addonTable.COLORS.white:GetRGB())
     else
-      local upgradeLevel, originalIlvl = GetItemUpgradeLevel(item)
       v.itemInfo = {
         link = item:GetItemLink(),
         itemId = item:GetItemID(),
         ilvl = item:GetCurrentItemLevel(),
         itemGUID = item:GetItemGUID(),
-        upgradeLevel = upgradeLevel,
-        originalIlvl = originalIlvl,
+        originalIlvl = C_Item.GetDetailedItemLevelInfo(item:GetItemID()) or item:GetCurrentItemLevel(),
         reforge = GetReforgeID(v.slotId),
         slotId = v.slotId,
       }
@@ -1749,7 +1800,7 @@ function ReforgeLite:UpdateItems()
       end
 
       if currentValue and currentValue ~= 0 then
-        v.stats[j]:SetText(currentValue)
+        v.stats[j]:SetText(FormatLargeNumber(currentValue))
         if s.name == reforgeSrc then
           v.stats[j]:SetTextColor(v.stats[j].fontColors.red:GetRGB())
         elseif s.name == reforgeDst then
@@ -1767,7 +1818,7 @@ function ReforgeLite:UpdateItems()
   local hasNoData = next(columnHasData) == nil
 
   for i, v in ipairs (ITEM_STATS) do
-    self.statTotals[i]:SetText(v.getter())
+    self.statTotals[i]:SetText(FormatLargeNumber(v.getter()))
     if columnHasData[i] or hasNoData then
       self.itemTable:ExpandColumn(i)
     else
@@ -2317,7 +2368,8 @@ function ReforgeLite:PLAYER_ENTERING_WORLD()
 end
 
 function ReforgeLite:PLAYER_AVG_ITEM_LEVEL_UPDATE()
-  self.itemLevel:SetFormattedText(CHARACTER_LINK_ITEM_LEVEL_TOOLTIP, select(2,GetAverageItemLevel()))
+  local _, ilvl = GetAverageItemLevel()
+  self.itemLevel:SetFormattedText("%d", ilvl)
 end
 
 function ReforgeLite:ADDON_LOADED (addon)

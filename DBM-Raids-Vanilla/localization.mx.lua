@@ -62,7 +62,7 @@ L:SetOptionLocalization{
 	WarnDismember	= DBM_CORE_L.AUTO_ANNOUNCE_OPTIONS.spell:format(96)
 }
 L:SetMiscLocalization{
-	PursueEmote 	= " mira a "
+	PursueEmote 	= "mira a"
 }
 
 -------------
@@ -90,7 +90,7 @@ L:SetTimerLocalization{
 }
 L:SetOptionLocalization{
 	WarnVulnerable	= "Mostrar anuncio para debilidades",
-	TimerVulnerable	= "Mostrar temporizador para la duración de las debilidades"
+	TimerVulnerable	= "Mostrar temporizador para debilidades"
 }
 
 ----------------
@@ -194,10 +194,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "Emperadores Gemelos"
-}
-L:SetMiscLocalization{
-	Veklor = "Emperador Vek'lor",
-	Veknil = "Emperador Vek'nilash"
 }
 
 ------------
@@ -371,8 +367,6 @@ L:SetGeneralLocalization{
 	name = "Señor sangriento Mandokir"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "Señor sangriento Mandokir",
-	Ohgan		= "Ohgan",
 	GazeYell	= "Te estoy vigilando"
 }
 
@@ -383,12 +377,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "Cabo de la Locura"
-}
-L:SetMiscLocalization{
-	Hazzarah = "Hazza'rah",
-	Renataki = "Renataki",
-	Wushoolay = "Wushoolay",
-	Grilek = "Gri'lek"
 }
 
 -------------------
@@ -483,6 +471,8 @@ L:SetGeneralLocalization{
 ----------------
 --  Ebonroc and Flamegor  --
 ----------------
+L = DBM:GetModLocalization("EbonrocandFlamegor")
+
 L:SetGeneralLocalization{
 	name = "Ebanorroca y Flamagor"
 }
@@ -621,6 +611,7 @@ SpecWarnBothBombs			= "Mostrar anuncio especial si las bombas azul y verde está
 SpecWarnBothBombsYou		= "Mostrar anuncio especial si las bombas azul y verde están en ti",
 TimerBombs					= "Mostrar temporizador para las bombas de prueba azul y verde"
 }
+
 ----------------
 --  Lucifron  --
 ----------------
@@ -801,7 +792,7 @@ L:SetGeneralLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull1				= "¡Eso, corran! ¡Así la sangre circula más rápido!",
+	Pull1				= "Eso… ¡Corran! ¡Así la sangre circula más rápido!",
 	Pull2				= "Solo un bocado...",
 	Pull3				= "No hay salida."
 })
@@ -826,7 +817,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "¡Arrodíllate ante mí, sabandija!"--Not actually pull trigger, but often said on pull
+	Pull1					= "¡Arrodíllate ante mí, sabandija!",
+	Pull2					= "¡No puedes esconderte de mí!",
+	Pull3					= "¡Mátalos en el nombre del amo!",
+	Pull4					= "¡Corran mientras puedan!"
 })
 
 -------------
@@ -882,6 +876,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull1				= "¡Muere, intruso!",
 	Pull2				= "¡Gloria al amo!",
+	Pull3				= "¡No tienes derecho a vivir!",
 	AddsYell			= "¡Levántense, soldados míos! ¡Levántense y luchen una vez más!"
 })
 
@@ -911,7 +906,8 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "Ahora me perteneces.",
-	Pull2				= "Te veo..."
+	Pull2				= "Te veo...",
+	Pull3				= "Eres... mi próxima víctima."
 })
 
 -------------
@@ -1055,7 +1051,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell			= "Tú mismo has buscado tu final.",
 	WarningWave1	= "%d %s",
 	WarningWave2	= "%d %s y %d %s",
 	WarningWave3	= "%d %s, %d %s y %d %s",
@@ -1081,6 +1076,7 @@ L:SetOptionLocalization({
 })
 
 L:SetTimerLocalization({
+	timerMark	= "Marca %d"
 })
 
 L:SetWarningLocalization({
@@ -1137,7 +1133,7 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Yell = "¡Lacayos, servidores, soldados de la fría oscuridad! ¡Obedezcan el llamado de Kel'Thuzad!"
+	Yell = "¡Esbirros, sirvientes, soldados de la fría oscuridad! ¡Obedezcan la llamada de Kel'Thuzad!"
 })
 
 L:SetWarningLocalization({

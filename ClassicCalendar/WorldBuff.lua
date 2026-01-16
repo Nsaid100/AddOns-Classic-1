@@ -10,8 +10,11 @@ local AceSerializer = LibStub("AceSerializer-3.0")
 -- World Buff data and functions (global for DataSync access)
 WorldBuffs = {}
 
--- Saved variables for world buff data
-WorldBuffData = WorldBuffData or {}
+-- Saved variables for world buff data - separate table for each buff type
+WorldBuffRendData = WorldBuffRendData or {}
+WorldBuffHakkarData = WorldBuffHakkarData or {}
+WorldBuffOnyxiaData = WorldBuffOnyxiaData or {}
+WorldBuffNefarianData = WorldBuffNefarianData or {}
 
 -- Item types for world buffs
 local WORLD_BUFF_ITEMS = {
@@ -20,6 +23,21 @@ local WORLD_BUFF_ITEMS = {
     ["ONYXIA_HEAD"] = { name = "Onyxia's Head", texture = "Interface\\Icons\\INV_Misc_Head_Dragon_01" },
     ["NEFARIAN_HEAD"] = { name = "Nefarian's Head", texture = "Interface\\Icons\\INV_Misc_Head_Dragon_Black" }
 }
+
+-- Helper function to get the appropriate data table for each buff type
+function WorldBuffs:GetWorldBuffDataTable(itemType)
+    if itemType == "REND_HEAD" then
+        return WorldBuffRendData
+    elseif itemType == "HAKKAR_HEART" then
+        return WorldBuffHakkarData
+    elseif itemType == "ONYXIA_HEAD" then
+        return WorldBuffOnyxiaData
+    elseif itemType == "NEFARIAN_HEAD" then
+        return WorldBuffNefarianData
+    else
+        error("Unknown world buff itemType: " .. tostring(itemType))
+    end
+end
 
 -- Check if player has officer privileges
 local function IsOfficer()
@@ -58,8 +76,15 @@ local function GetGuildMembers()
 end
 
 -- Update player name autocomplete suggestions
-function WorldBuffs:UpdatePlayerAutocomplete(inputText)
+function WorldBuffs:UpdatePlayerAutocomplete(inputText, targetInput)
     if not self.addDialog or not self.addDialog.autocompleteFrame then return end
+    
+    -- Store which input field we're autocompleting for
+    self.addDialog.autocompleteTarget = targetInput or self.addDialog.playerInput
+    
+    -- Position autocomplete frame relative to the active input field
+    self.addDialog.autocompleteFrame:ClearAllPoints()
+    self.addDialog.autocompleteFrame:SetPoint("TOPLEFT", self.addDialog.autocompleteTarget, "BOTTOMLEFT", 0, 0)
     
     -- Hide if no input text
     if not inputText or inputText == "" then
@@ -73,8 +98,18 @@ function WorldBuffs:UpdatePlayerAutocomplete(inputText)
     local inputLower = string.lower(inputText)
     
     for _, member in ipairs(guildMembers) do
-        if string.find(string.lower(member.name), inputLower, 1, true) then
-            table.insert(filteredMembers, member)
+        -- Strip realm name from member name for both filtering and display
+        local cleanName = string.match(member.name, "([^-]+)") or member.name
+        if string.find(string.lower(cleanName), inputLower, 1, true) then
+            -- Store both the original member data and the clean name
+            local filteredMember = {
+                name = member.name,
+                cleanName = cleanName,
+                online = member.online,
+                level = member.level,
+                class = member.class
+            }
+            table.insert(filteredMembers, filteredMember)
         end
     end
     
@@ -124,21 +159,22 @@ function WorldBuffs:CreateAutocompleteButtons(members)
         -- Set button properties
         button:SetPoint("TOPLEFT", self.addDialog.autocompleteContent, "TOPLEFT", 0, -yOffset)
         
-        -- Format display text with online status and class color
-        local displayText = member.name
+        -- Format display text with online status and class color using clean name
+        local displayName = member.cleanName or member.name
         if member.online then
             -- Use normal white text for better readability instead of class colors
-            button:SetText("|cffffffff" .. member.name .. "|r") -- White for online
+            button:SetText("|cffffffff" .. displayName .. "|r") -- White for online
         else
             -- Use light gray instead of dark gray for better readability
-            button:SetText("|cffcccccc" .. member.name .. "|r") -- Light gray for offline
+            button:SetText("|cffcccccc" .. displayName .. "|r") -- Light gray for offline
         end
         
-        -- Set click handler
+        -- Set click handler to use clean name
         button:SetScript("OnClick", function()
-            self.addDialog.playerInput:SetText(member.name)
+            local targetInput = self.addDialog.autocompleteTarget or self.addDialog.playerInput
+            targetInput:SetText(displayName)
             self.addDialog.autocompleteFrame:Hide()
-            self.addDialog.playerInput:ClearFocus()
+            targetInput:ClearFocus()
         end)
         
         button:Show()
@@ -264,6 +300,35 @@ function WorldBuffs:StyleCalendarButton(button, width)
     highlight:SetBlendMode("ADD")
 end
 
+-- Save WorldBuff frame position
+function WorldBuffs:SaveFramePosition()
+    if not WorldBuffFrame or not CCConfig then return end
+    
+    local point, relativeTo, relativePoint, xOfs, yOfs = WorldBuffFrame:GetPoint()
+    CCConfig.WorldBuffFramePos = {
+        point = point,
+        relativePoint = relativePoint,
+        xOfs = xOfs,
+        yOfs = yOfs
+    }
+end
+
+-- Restore WorldBuff frame position
+function WorldBuffs:RestoreFramePosition()
+    if not WorldBuffFrame or not CCConfig or not CCConfig.WorldBuffFramePos then
+        WorldBuffFrame:SetPoint("CENTER")
+        return
+    end
+    
+    local pos = CCConfig.WorldBuffFramePos
+    if pos.point and pos.relativePoint and pos.xOfs and pos.yOfs then
+        WorldBuffFrame:ClearAllPoints()
+        WorldBuffFrame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+    else
+        WorldBuffFrame:SetPoint("CENTER")
+    end
+end
+
 -- Create the main WorldBuff window
 function WorldBuffs:CreateMainFrame()
     if WorldBuffFrame then
@@ -273,13 +338,18 @@ function WorldBuffs:CreateMainFrame()
     -- Create main frame
     WorldBuffFrame = CreateFrame("Frame", "ClassicCalendarWorldBuffFrame", UIParent, "BasicFrameTemplateWithInset")
     WorldBuffFrame:SetSize(600, 450)
-    WorldBuffFrame:SetPoint("CENTER")
     WorldBuffFrame:SetMovable(true)
     WorldBuffFrame:EnableMouse(true)
     WorldBuffFrame:RegisterForDrag("LeftButton")
     WorldBuffFrame:SetScript("OnDragStart", WorldBuffFrame.StartMoving)
-    WorldBuffFrame:SetScript("OnDragStop", WorldBuffFrame.StopMovingOrSizing)
+    WorldBuffFrame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        WorldBuffs:SaveFramePosition()
+    end)
     WorldBuffFrame:Hide()
+    
+    -- Restore saved position or default to center
+    WorldBuffs:RestoreFramePosition()
     
     -- Make background transparent
     self:HideFrameBackground(WorldBuffFrame)
@@ -335,9 +405,20 @@ function WorldBuffs:CreateMainFrame()
     -- Create scrollable table for current tab (positioned below the button, within inset bounds)
     WorldBuffFrame.scrollFrame = CreateFrame("ScrollFrame", "ClassicCalendarWorldBuffScrollFrame", WorldBuffFrame, "UIPanelScrollFrameTemplate")
     WorldBuffFrame.scrollFrame:SetPoint("TOPLEFT", WorldBuffFrame, "TOPLEFT", 15, -65)
-    WorldBuffFrame.scrollFrame:SetPoint("BOTTOMRIGHT", WorldBuffFrame, "BOTTOMRIGHT", -35, 15)
+    WorldBuffFrame.scrollFrame:SetPoint("BOTTOMRIGHT", WorldBuffFrame, "BOTTOMRIGHT", -35, 55) -- Leave space for placeholder button
     
     WorldBuffFrame.scrollChild = CreateFrame("Frame", nil, WorldBuffFrame.scrollFrame)
+    WorldBuffFrame.scrollChild:SetSize(1, 1)
+    WorldBuffFrame.scrollFrame:SetScrollChild(WorldBuffFrame.scrollChild)
+    
+    -- Create Placeholder button (positioned below the scroll frame)
+    WorldBuffFrame.placeholderButton = CreateFrame("Button", nil, WorldBuffFrame, "UIPanelButtonTemplate")
+    WorldBuffFrame.placeholderButton:SetPoint("BOTTOMRIGHT", WorldBuffFrame, "BOTTOMRIGHT", -25, 20)
+    WorldBuffFrame.placeholderButton:SetSize(130, 22)
+    WorldBuffFrame.placeholderButton:SetText("Create Placeholder")
+    WorldBuffFrame.placeholderButton:SetScript("OnClick", function()
+        WorldBuffs:ShowPlaceholderDialog()
+    end)
     WorldBuffFrame.scrollChild:SetSize(1, 1)
     WorldBuffFrame.scrollFrame:SetScrollChild(WorldBuffFrame.scrollChild)
     
@@ -376,12 +457,10 @@ end
 
 -- Display entries for a specific item type
 function WorldBuffs:DisplayEntriesForItem(itemType)
-    if not WorldBuffData[itemType] then
-        WorldBuffData[itemType] = {}
-    end
+    local dataTable = self:GetWorldBuffDataTable(itemType)
     
     local yOffset = -5
-    local rowHeight = 25
+    local rowHeight = 20 -- Reduced from 25 to 20 for less padding
     
     -- Ensure frame exists
     if not WorldBuffFrame or not WorldBuffFrame.scrollChild then
@@ -391,15 +470,41 @@ function WorldBuffs:DisplayEntriesForItem(itemType)
     -- Create header
     local header = self:CreateTableRow(WorldBuffFrame.scrollChild, 0, yOffset, true)
     header.playerName:SetText("Player Name")
+    header.mainName:SetText("Main Name")
     header.receivedDate:SetText("Date Received")
-    header.altMain:SetText("Alt/Main")
     header.dropped:SetText("Dropped")
     
     yOffset = yOffset - rowHeight
     
-    -- Create rows for each entry
-    for i, entry in ipairs(WorldBuffData[itemType]) do
-        local row = self:CreateTableRow(WorldBuffFrame.scrollChild, i, yOffset, false, entry)
+    -- Create sorted list of non-deleted entries (oldest first by date received)
+    local sortedEntries = {}
+    for i, entry in ipairs(dataTable) do
+        if not entry.deleted then
+            table.insert(sortedEntries, {index = i, entry = entry})
+        end
+    end
+    
+    -- Sort by date received (oldest first)
+    table.sort(sortedEntries, function(a, b)
+        -- Parse dates for comparison (MM/DD/YYYY format)
+        local function parseDate(dateStr)
+            if not dateStr then return 0 end
+            local month, day, year = dateStr:match("(%d+)/(%d+)/(%d+)")
+            if month and day and year then
+                -- Convert to comparable number: YYYYMMDD
+                return tonumber(year) * 10000 + tonumber(month) * 100 + tonumber(day)
+            end
+            return 0
+        end
+        
+        local dateA = parseDate(a.entry.receivedDate or a.entry.playerNameedDate or a.entry.droppededDate or "01/01/1970")
+        local dateB = parseDate(b.entry.receivedDate or b.entry.playerNameedDate or b.entry.droppededDate or "01/01/1970")
+        return dateA < dateB -- Oldest first
+    end)
+    
+    -- Create rows for sorted entries
+    for _, sortedEntry in ipairs(sortedEntries) do
+        local row = self:CreateTableRow(WorldBuffFrame.scrollChild, sortedEntry.index, yOffset, false, sortedEntry.entry)
         yOffset = yOffset - rowHeight
     end
     
@@ -411,7 +516,7 @@ end
 function WorldBuffs:CreateTableRow(parent, index, yOffset, isHeader, data)
     local rowFrame = CreateFrame("Frame", nil, parent)
     rowFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, yOffset)
-    rowFrame:SetSize(500, 25)
+    rowFrame:SetSize(500, 20) -- Reduced from 25 to 20
     
     -- Player name column
     if isHeader then
@@ -420,7 +525,8 @@ function WorldBuffs:CreateTableRow(parent, index, yOffset, isHeader, data)
         rowFrame.playerName = CreateFrame("Button", nil, rowFrame)
         rowFrame.playerName:SetSize(150, 20)
         rowFrame.playerName:SetNormalFontObject("GameFontNormalSmall")
-        rowFrame.playerName:SetText(data and data.playerName or "")
+        local displayName = (data and data.playerName and data.playerName ~= "") and data.playerName or "[Unknown Player]"
+        rowFrame.playerName:SetText(displayName)
         
         -- Try to control text positioning within the button
         local fontString = rowFrame.playerName:GetFontString()
@@ -433,7 +539,7 @@ function WorldBuffs:CreateTableRow(parent, index, yOffset, isHeader, data)
         end
         
         -- Left click to edit
-        rowFrame.playerName:SetScript("OnClick", function(self, button)
+        rowFrame.playerName:SetScript("OnClick", function(clickedFrame, button)
             if button == "LeftButton" then
                 WorldBuffs:EditEntry(index, data)
             elseif button == "RightButton" then
@@ -446,23 +552,24 @@ function WorldBuffs:CreateTableRow(parent, index, yOffset, isHeader, data)
     -- Use same positioning for both header and button
     rowFrame.playerName:SetPoint("LEFT", rowFrame, "LEFT", 10, 0)
     
+    -- Main Name column
+    if isHeader then
+        rowFrame.mainName = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    else
+        rowFrame.mainName = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        rowFrame.mainName:SetText(data and data.mainName or "")
+    end
+    rowFrame.mainName:SetPoint("LEFT", rowFrame, "LEFT", 170, 0)
+    
     -- Date received column  
     if isHeader then
         rowFrame.receivedDate = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     else
         rowFrame.receivedDate = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        rowFrame.receivedDate:SetText(data and data.receivedDate or "")
+        local displayDate = (data and (data.receivedDate or data.playerNameedDate or data.droppededDate)) or ""
+        rowFrame.receivedDate:SetText(displayDate)
     end
-    rowFrame.receivedDate:SetPoint("LEFT", rowFrame, "LEFT", 170, 0)
-    
-    -- Alt/Main column
-    if isHeader then
-        rowFrame.altMain = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    else
-        rowFrame.altMain = rowFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        rowFrame.altMain:SetText(data and data.altMain or "")
-    end
-    rowFrame.altMain:SetPoint("LEFT", rowFrame, "LEFT", 300, 0)
+    rowFrame.receivedDate:SetPoint("LEFT", rowFrame, "LEFT", 330, 0)
     
     -- Dropped column
     if isHeader then
@@ -477,7 +584,7 @@ function WorldBuffs:CreateTableRow(parent, index, yOffset, isHeader, data)
             rowFrame.dropped:SetTextColor(0.2, 1, 0.2) -- Green
         end
     end
-    rowFrame.dropped:SetPoint("LEFT", rowFrame, "LEFT", 400, 0)
+    rowFrame.dropped:SetPoint("LEFT", rowFrame, "LEFT", 490, 0)
     
     return rowFrame
 end
@@ -558,7 +665,7 @@ function WorldBuffs:ShowAddEntryDialog()
         
         -- Set up autocomplete functionality
         self.addDialog.playerInput:SetScript("OnTextChanged", function(editbox)
-            WorldBuffs:UpdatePlayerAutocomplete(editbox:GetText())
+            WorldBuffs:UpdatePlayerAutocomplete(editbox:GetText(), editbox)
         end)
         
         self.addDialog.playerInput:SetScript("OnEditFocusLost", function()
@@ -570,9 +677,33 @@ function WorldBuffs:ShowAddEntryDialog()
             end)
         end)
         
+        -- Main name input
+        self.addDialog.mainNameLabel = self.addDialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        self.addDialog.mainNameLabel:SetPoint("TOPLEFT", self.addDialog.playerInput, "BOTTOMLEFT", 0, -15)
+        self.addDialog.mainNameLabel:SetText("Main Name:")
+        
+        self.addDialog.mainNameInput = CreateFrame("EditBox", nil, self.addDialog, "InputBoxTemplate")
+        self.addDialog.mainNameInput:SetPoint("TOPLEFT", self.addDialog.mainNameLabel, "BOTTOMLEFT", 0, -5)
+        self.addDialog.mainNameInput:SetSize(200, 20)
+        self.addDialog.mainNameInput:SetAutoFocus(false)
+        
+        -- Set up autocomplete functionality for Main Name
+        self.addDialog.mainNameInput:SetScript("OnTextChanged", function(editbox)
+            WorldBuffs:UpdatePlayerAutocomplete(editbox:GetText(), editbox)
+        end)
+        
+        self.addDialog.mainNameInput:SetScript("OnEditFocusLost", function()
+            -- Hide autocomplete after a short delay to allow clicking on suggestions
+            C_Timer.After(0.2, function()
+                if WorldBuffs.addDialog and WorldBuffs.addDialog.autocompleteFrame then
+                    WorldBuffs.addDialog.autocompleteFrame:Hide()
+                end
+            end)
+        end)
+        
         -- Date input
         self.addDialog.dateLabel = self.addDialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        self.addDialog.dateLabel:SetPoint("TOPLEFT", self.addDialog.playerInput, "BOTTOMLEFT", 0, -15)
+        self.addDialog.dateLabel:SetPoint("TOPLEFT", self.addDialog.mainNameInput, "BOTTOMLEFT", 0, -15)
         self.addDialog.dateLabel:SetText("Date Received:")
         
         -- Date picker button (instead of EditBox)
@@ -622,41 +753,9 @@ function WorldBuffs:ShowAddEntryDialog()
             end
         end)
         
-        -- Alt/Main dropdown
-        self.addDialog.altMainLabel = self.addDialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        self.addDialog.altMainLabel:SetPoint("TOPLEFT", self.addDialog.dateButton, "BOTTOMLEFT", 0, -10)
-        self.addDialog.altMainLabel:SetText("Alt or Main:")
-        
-        self.addDialog.altMainDropdown = CreateFrame("Frame", "ClassicCalendarWorldBuffAltMainDropdown", self.addDialog, "UIDropDownMenuTemplate")
-        self.addDialog.altMainDropdown:SetPoint("TOPLEFT", self.addDialog.altMainLabel, "BOTTOMLEFT", -15, -5)
-        UIDropDownMenu_SetWidth(self.addDialog.altMainDropdown, 100)
-        UIDropDownMenu_SetText(self.addDialog.altMainDropdown, "Main")
-        
-        UIDropDownMenu_Initialize(self.addDialog.altMainDropdown, function(self, level)
-            -- Create "Main" option
-            local info = UIDropDownMenu_CreateInfo()
-            info.text = "Main"
-            info.value = "Main"
-            info.func = function() 
-                UIDropDownMenu_SetSelectedValue(WorldBuffs.addDialog.altMainDropdown, "Main")
-                UIDropDownMenu_SetText(WorldBuffs.addDialog.altMainDropdown, "Main")
-            end
-            UIDropDownMenu_AddButton(info)
-            
-            -- Create "Alt" option with new info table
-            local altInfo = UIDropDownMenu_CreateInfo()
-            altInfo.text = "Alt"
-            altInfo.value = "Alt"
-            altInfo.func = function() 
-                UIDropDownMenu_SetSelectedValue(WorldBuffs.addDialog.altMainDropdown, "Alt")
-                UIDropDownMenu_SetText(WorldBuffs.addDialog.altMainDropdown, "Alt")
-            end
-            UIDropDownMenu_AddButton(altInfo)
-        end)
-        
         -- Dropped status dropdown (for editing entries)
         self.addDialog.droppedLabel = self.addDialog:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        self.addDialog.droppedLabel:SetPoint("TOPLEFT", self.addDialog.altMainDropdown, "BOTTOMLEFT", 15, -5)
+        self.addDialog.droppedLabel:SetPoint("TOPLEFT", self.addDialog.dateButton, "BOTTOMLEFT", 0, -10)
         self.addDialog.droppedLabel:SetText("Dropped:")
         
         self.addDialog.droppedDropdown = CreateFrame("Frame", "ClassicCalendarWorldBuffDroppedDropdown", self.addDialog, "UIDropDownMenuTemplate")
@@ -721,6 +820,7 @@ function WorldBuffs:ShowAddEntryDialog()
     
     -- Clear inputs and show
     self.addDialog.playerInput:SetText("")
+    self.addDialog.mainNameInput:SetText("")
     
     -- Reset to today's date
     self.addDialog.selectedDate = {
@@ -729,8 +829,6 @@ function WorldBuffs:ShowAddEntryDialog()
         year = tonumber(date("%Y"))
     }
     self.addDialog.dateButton:SetText(tostring(date("%m/%d/%Y")))
-    
-    UIDropDownMenu_SetText(self.addDialog.altMainDropdown, "Main")
     
     -- Reset title and button visibility based on edit mode
     if not self.editMode then
@@ -755,26 +853,48 @@ function WorldBuffs:ShowAddEntryDialog()
     self.addDialog:Show()
 end
 
+-- Show placeholder dialog (same as add dialog but with TBD pre-filled)
+function WorldBuffs:ShowPlaceholderDialog()
+    -- Get current tab to determine item type
+    local currentTab = nil
+    local itemType = nil
+    if WorldBuffFrame and WorldBuffFrame.selectedTab and WorldBuffFrame.tabs[WorldBuffFrame.selectedTab] then
+        currentTab = WorldBuffFrame.tabs[WorldBuffFrame.selectedTab].itemType
+        itemType = currentTab
+    end
+    
+    if not itemType then
+        print("Error: Could not determine item type for placeholder event")
+        return
+    end
+    
+    -- Create placeholder data with "TBD" as player name
+    local placeholderData = {
+        playerName = "TBD",
+        mainName = "",
+        receivedDate = date("%m/%d/%Y"),
+        dropped = "No"
+    }
+    
+    -- Show date picker popup for the placeholder event (same flow as normal event)
+    self:ShowDatePickerPopup(itemType, placeholderData)
+end
+
 
 
 -- Save entry from dialog
 function WorldBuffs:SaveEntry()
-    local playerName = self.addDialog.playerInput:GetText()
+    local fullPlayerName = self.addDialog.playerInput:GetText()
+    local playerName = string.match(fullPlayerName, "([^-]+)") or fullPlayerName -- Remove realm portion
+    local mainName = self.addDialog.mainNameInput:GetText()
     local receivedDate = string.format("%02d/%02d/%d", 
         self.addDialog.selectedDate.month, 
         self.addDialog.selectedDate.day, 
         self.addDialog.selectedDate.year)
-    -- Safely get dropdown values
-    local altMain = "Main" -- Default value
-    if self.addDialog.altMainDropdown then
-        local dropdownText = UIDropDownMenu_GetText(self.addDialog.altMainDropdown)
-        if dropdownText and dropdownText ~= "" then
-            altMain = dropdownText
-        end
-    end
-    
-    if playerName == "" then
-        print("Player name cannot be empty")
+
+    -- Require valid player name
+    if playerName == "" or playerName == nil or playerName:match("^%s*$") then
+        print("|cFFFF0000ClassicCalendar:|r Player name is required.")
         return
     end
     
@@ -788,10 +908,8 @@ function WorldBuffs:SaveEntry()
         currentTab = "REND_HEAD" -- Default
     end
     
-    -- Initialize if needed
-    if not WorldBuffData[currentTab] then
-        WorldBuffData[currentTab] = {}
-    end
+    -- Get the appropriate data table
+    local dataTable = self:GetWorldBuffDataTable(currentTab)
     
     if self.editMode then
         -- Edit existing entry - safely get dropped value
@@ -807,11 +925,11 @@ function WorldBuffs:SaveEntry()
             dropped = self.editOriginalData.dropped
         end
         
-        WorldBuffData[currentTab][self.editIndex] = {
-            playerName = playerName,
-            receivedDate = receivedDate,
-            altMain = altMain,
-            dropped = dropped,
+        dataTable[self.editIndex] = {
+            playerName = tostring(playerName or ""),
+            mainName = tostring(mainName or ""),
+            receivedDate = tostring(receivedDate or ""),
+            dropped = tostring(dropped or "No"),
             lastModified = time()
         }
         
@@ -825,11 +943,11 @@ function WorldBuffs:SaveEntry()
         -- Add new entry
         local dropped = "No" -- Default to No for new entries
         
-        table.insert(WorldBuffData[currentTab], {
-            playerName = playerName,
-            receivedDate = receivedDate,
-            altMain = altMain,
-            dropped = dropped,
+        table.insert(dataTable, {
+            playerName = tostring(playerName or ""),
+            mainName = tostring(mainName or ""),
+            receivedDate = tostring(receivedDate or ""),
+            dropped = tostring(dropped or "No"),
             lastModified = time()
         })
         
@@ -858,6 +976,18 @@ end
 
 -- Edit existing entry
 function WorldBuffs:EditEntry(index, data)
+    -- Validate input parameters
+    if not index or not data then
+        print("Cannot edit entry: missing index or data")
+        return
+    end
+    
+    -- Don't allow editing deleted entries
+    if data.deleted then
+        print("Cannot edit deleted entry")
+        return
+    end
+    
     -- Store edit context
     self.editMode = true
     self.editIndex = index
@@ -869,29 +999,36 @@ function WorldBuffs:EditEntry(index, data)
     -- Pre-populate the fields with current data
     if self.addDialog and self.addDialog.playerInput then
         self.addDialog.playerInput:SetText(data.playerName or "")
+        self.addDialog.mainNameInput:SetText(data.mainName or "")
         
         -- Hide autocomplete dropdown since we're pre-populating with existing data
         if self.addDialog.autocompleteFrame then
             self.addDialog.autocompleteFrame:Hide()
         end
         
-        -- Parse the date and set it
-        local month, day, year = data.receivedDate:match("(%d+)/(%d+)/(%d+)")
-        if month and day and year then
+        -- Parse the date and set it - handle potentially missing or misnamed date field
+        local dateString = data.receivedDate or data.playerNameedDate or data.droppededDate or ""
+        if dateString and dateString ~= "" then
+            local month, day, year = dateString:match("(%d+)/(%d+)/(%d+)")
+            if month and day and year then
+                self.addDialog.selectedDate = {
+                    month = tonumber(month),
+                    day = tonumber(day), 
+                    year = tonumber(year)
+                }
+                -- Update the date button display
+                self.addDialog.dateButton:SetText(dateString)
+            end
+        else
+            -- Default to today's date if no date is available
+            local currentDate = date("*t")
             self.addDialog.selectedDate = {
-                month = tonumber(month),
-                day = tonumber(day), 
-                year = tonumber(year)
+                month = currentDate.month,
+                day = currentDate.day,
+                year = currentDate.year
             }
-            -- Update the date button display
-            self.addDialog.dateButton:SetText(data.receivedDate)
-        end
-        
-        -- Set alt/main dropdown - properly set both selected value and display text
-        if self.addDialog.altMainDropdown then
-            local altMainValue = data.altMain or "Alt"
-            UIDropDownMenu_SetSelectedValue(self.addDialog.altMainDropdown, altMainValue)
-            UIDropDownMenu_SetText(self.addDialog.altMainDropdown, altMainValue)
+            local defaultDate = string.format("%02d/%02d/%d", currentDate.month, currentDate.day, currentDate.year)
+            self.addDialog.dateButton:SetText(defaultDate)
         end
         
         -- Set dropped status - properly set both selected value and display text
@@ -1083,44 +1220,32 @@ function WorldBuffs:CreateGuildEventWithDate(itemType, data, selectedDate)
         end
     end
     
-    -- Calculate month offset from current month to selected month/year
-    local currentCalendarTime = C_DateAndTime.GetCurrentCalendarTime()
-    local currentYear = currentCalendarTime.year
-    local currentMonth = currentCalendarTime.month
+    -- Navigate to the selected month first - check what month calendar is currently displaying
+    local calendarMonthInfo = C_Calendar.GetMonthInfo()
+    local displayedMonth = calendarMonthInfo and calendarMonthInfo.month or tonumber(date("%m"))
+    local displayedYear = calendarMonthInfo and calendarMonthInfo.year or tonumber(date("%Y"))
     
-    local yearDiff = selectedDate.year - currentYear
-    local monthDiff = selectedDate.month - currentMonth
+    -- Calculate how many months to navigate from displayed month to selected month
+    local yearDiff = selectedDate.year - displayedYear
+    local monthDiff = selectedDate.month - displayedMonth
     local monthOffset = yearDiff * 12 + monthDiff
     
-    -- Create a simulated day button with the same structure as real calendar day buttons
+    -- Only navigate if we're not already displaying the correct month
+    if monthOffset ~= 0 then
+        CalendarFrame_OffsetMonth(monthOffset)
+    end
+    
+    -- Create a simple fake day button for the event
     local fakeDayButton = {
         day = selectedDate.day,
-        monthOffset = monthOffset,
-        -- Add GetID method that returns a calculated grid position
-        GetID = function(self)
-            -- Calculate what day of the week this date falls on
-            local monthInfo = C_Calendar.GetMonthInfo(monthOffset)
-            if monthInfo then
-                local firstWeekday = monthInfo.firstWeekday or 1
-                -- Calculate grid position (1-42) based on day and first weekday
-                -- This is a simplified calculation - the exact position depends on the calendar layout
-                local gridPosition = selectedDate.day + firstWeekday - 1
-                return gridPosition
-            end
-            return 1 -- fallback
-        end,
-        -- Add stub methods for UI button methods that might be called
+        monthOffset = 0, -- No additional offset needed after navigation
+        GetID = function(self) return 1 end,
         LockHighlight = function() end,
         UnlockHighlight = function() end,
         GetHighlightTexture = function() 
             return { SetAlpha = function() end }
         end
     }
-    
-    -- Navigate to the correct month if needed (this sets the calendar to show the target month)
-    if fakeDayButton.monthOffset ~= 0 then
-        CalendarFrame_OffsetMonth(fakeDayButton.monthOffset)
-    end
     
     -- Create guild event directly (skip the day selection which causes UI errors with fake buttons)
     if C_Calendar and CalendarFrame_ShowEventFrame and CalendarCreateEventFrame then
@@ -1132,6 +1257,10 @@ function WorldBuffs:CreateGuildEventWithDate(itemType, data, selectedDate)
         C_Calendar.CreateGuildSignUpEvent()
         CalendarCreateEventFrame.mode = "create"
         CalendarCreateEventFrame.dayButton = fakeDayButton  -- Store the day info for the event
+        
+        -- Set the event date to exactly what was selected (no calculations needed)
+        C_Calendar.EventSetDate(selectedDate.month, selectedDate.day, selectedDate.year)
+        
         CalendarFrame_ShowEventFrame(CalendarCreateEventFrame)
         
         -- Get item display names and descriptions (avoid apostrophes for calendar compatibility)
@@ -1142,56 +1271,62 @@ function WorldBuffs:CreateGuildEventWithDate(itemType, data, selectedDate)
             HAKKAR_HEART = "Heart of Hakkar"
         }
         
+        -- Ensure World Buffs filter is enabled so our events are visible
+        if GetCVar("calendarShowWorldBuffs") == "0" then
+            SetCVar("calendarShowWorldBuffs", "1")
+            CalendarFrame_Update() -- Refresh calendar to show our events
+        end
+        
         -- Enhanced WoW-style descriptions with faction-specific text
         local eventDescriptionTemplates = {
             Horde = {
                 REND_HEAD = "Heed the call, heroes of the Horde! <playername> has conquered the mighty Rend Blackhand and shall present his severed head as tribute to our great Warchief!\n\n" ..
-                           "🏺 Rally at Orgrimmar or the Crossroads for this momentous ceremony!\n" ..
-                           "⚔️ The Rallying Cry of the Dragonslayer awaits - granting +140 Attack Power and +5% Critical Strike!\n" ..
-                           "⏰ Arrive 5 minutes early to secure your place in this glorious gathering!\n\n" ..
+                           "Rally at Orgrimmar or the Crossroads for this momentous ceremony!\n" ..
+                           "The Rallying Cry of the Dragonslayer awaits - granting +140 Attack Power and +5% Critical Strike!\n" ..
+                           "Arrive 5 minutes early to secure your place in this glorious gathering!\n\n" ..
                            "For the Horde! Lok'tar Ogar!",
                 
                 NEFARIAN_HEAD = "Witness the fall of a dragon! <playername> has slain the dread Nefarian, Lord of Blackrock, and returns with proof of this legendary victory!\n\n" ..
-                                "🏺 Gather at Orgrimmar or the Crossroads to honor this heroic deed!\n" ..
-                                "🐲 The Dragonslayer's blessing shall flow through all present - +140 Attack Power and +5% Critical Strike!\n" ..
-                                "⏰ Be present 5 minutes before the ceremony begins!\n\n" ..
+                                "Gather at Orgrimmar or the Crossroads to honor this heroic deed!\n" ..
+                                "The Dragonslayer's blessing shall flow through all present - +140 Attack Power and +5% Critical Strike!\n" ..
+                                "Be present 5 minutes before the ceremony begins!\n\n" ..
                                 "The Black Dragonflight trembles! Victory to the Horde!",
                 
                 ONYXIA_HEAD = "Behold! <playername> returns victorious from the depths of Onyxia's Lair, bearing the head of the Broodmother herself!\n\n" ..
-                              "🏺 All members of the Horde are summoned to Orgrimmar or the Crossroads!\n" ..
-                              "🐲 Receive the Rallying Cry of the Dragonslayer - +140 Attack Power and +5% Critical Strike chance!\n" ..
-                              "⏰ Assemble 5 minutes prior to witness this triumph!\n\n" ..
+                              "All members of the Horde are summoned to Orgrimmar or the Crossroads!\n" ..
+                              "Receive the Rallying Cry of the Dragonslayer - +140 Attack Power and +5% Critical Strike chance!\n" ..
+                              "Assemble 5 minutes prior to witness this triumph!\n\n" ..
                               "Let the Alliance tremble at our might! For the Horde!",
                 
                 HAKKAR_HEART = "The Soulflayer has fallen! <playername> has ventured into the accursed depths of Zul'Gurub and torn the very heart from the blood god Hakkar!\n\n" ..
-                               "🌴 Journey to Booty Bay or the sacred grounds of Zandalar Isle!\n" ..
-                               "✨ The Spirit of Zandalar shall bless all who attend - +15% to all stats!\n" ..
-                               "⏰ Arrive early to partake in this ancient Trollish ritual!\n\n" ..
+                               "Journey to Booty Bay or the sacred grounds of Zandalar Isle!\n" ..
+                               "The Spirit of Zandalar shall bless all who attend - +15% to all stats!\n" ..
+                               "Arrive early to partake in this ancient Trollish ritual!\n\n" ..
                                "May the loa smile upon us! Victory to those who dare!"
             },
             Alliance = {
                 REND_HEAD = "Citizens of the Alliance! <playername> has struck down the orc warlord Rend Blackhand and returns bearing proof of this noble victory!\n\n" ..
-                           "⚔️ Gather at Stormwind City or Ironforge to witness this heroic display!\n" ..
-                           "🏆 The Rallying Cry of the Dragonslayer shall inspire all - +140 Attack Power and +5% Critical Strike!\n" ..
-                           "⏰ Arrive 5 minutes early to honor this champion of justice!\n\n" ..
+                           "Gather at Stormwind City or Ironforge to witness this heroic display!\n" ..
+                           "The Rallying Cry of the Dragonslayer shall inspire all - +140 Attack Power and +5% Critical Strike!\n" ..
+                           "Arrive 5 minutes early to honor this champion of justice!\n\n" ..
                            "For the Alliance! For honor and glory!",
                 
                 NEFARIAN_HEAD = "A great evil has fallen! <playername> has vanquished Nefarian, the corrupted dragon lord, and brings forth evidence of this legendary triumph!\n\n" ..
-                                "⚔️ All Alliance members are called to Stormwind City or Ironforge!\n" ..
-                                "🐲 Receive the Dragonslayer's blessing - +140 Attack Power and +5% Critical Strike!\n" ..
-                                "⏰ Assemble 5 minutes before this ceremony of valor!\n\n" ..
+                                "All Alliance members are called to Stormwind City or Ironforge!\n" ..
+                                "Receive the Dragonslayer's blessing - +140 Attack Power and +5% Critical Strike!\n" ..
+                                "Assemble 5 minutes before this ceremony of valor!\n\n" ..
                                 "Light be with us! The Alliance stands strong!",
                 
                 ONYXIA_HEAD = "Victory is ours! <playername> has conquered the dreaded Onyxia in her own lair and returns with the head of the Broodmother!\n\n" ..
-                              "⚔️ Citizens of the Alliance, gather at Stormwind City or Ironforge!\n" ..
-                              "🐲 The Rallying Cry of the Dragonslayer will strengthen all who attend - +140 Attack Power and +5% Critical Strike!\n" ..
-                              "⏰ Be present 5 minutes early to witness this triumph over darkness!\n\n" ..
+                              "Citizens of the Alliance, gather at Stormwind City or Ironforge!\n" ..
+                              "The Rallying Cry of the Dragonslayer will strengthen all who attend - +140 Attack Power and +5% Critical Strike!\n" ..
+                              "Be present 5 minutes early to witness this triumph over darkness!\n\n" ..
                               "By the Light, the Alliance prevails!",
                 
                 HAKKAR_HEART = "The blood god falls! <playername> has braved the cursed halls of Zul'Gurub and ripped the heart from Hakkar the Soulflayer!\n\n" ..
-                               "🌴 Journey to Booty Bay or brave the wilds of Stranglethorn!\n" ..
-                               "✨ All shall receive the Spirit of Zandalar - +15% to all attributes!\n" ..
-                               "⏰ Gather early for this ancient ritual of power!\n\n" ..
+                               "Journey to Booty Bay or brave the wilds of Stranglethorn!\n" ..
+                               "All shall receive the Spirit of Zandalar - +15% to all attributes!\n" ..
+                               "Gather early for this ancient ritual of power!\n\n" ..
                                "May the Light guide us to victory!"
             }
         }
@@ -1226,41 +1361,38 @@ function WorldBuffs:CreateGuildEventWithDate(itemType, data, selectedDate)
         
         -- Wait for the UI to load, then populate the fields
         C_Timer.After(0.3, function()
-            -- Get player name and item name
-            local playerName = data.playerName or UnitName("player")
+            -- Get player name and item name, strip realm from player name
+            local fullPlayerName = data.playerName or UnitName("player")
+            local playerName = string.match(fullPlayerName, "([^-]+)") or fullPlayerName -- Remove realm portion
             local itemName = itemNames[itemType] or "World Buff Item"
             
-            -- Set the enhanced event title with sanitization
+            -- Set the enhanced event title with sanitization (no metadata in title due to visibility issues)
             local rawTitle = playerName .. " Dropping " .. itemName
             local eventTitle = SanitizeEventTitle(rawTitle)
+            local eventTitleWithMetadata = eventTitle
             
             if CalendarCreateEventTitleEdit then
-                CalendarCreateEventTitleEdit:SetText(eventTitle)
+                CalendarCreateEventTitleEdit:SetText(eventTitleWithMetadata)
                 CalendarCreateEventTitleEdit:SetCursorPosition(0)
+                
+                -- Manually trigger the calendar system to register the title
+                -- because programmatic SetText doesn't trigger userChanged=true
+                C_Calendar.EventSetTitle(eventTitleWithMetadata)
+                
                 -- Validate that the title was set correctly
                 local setTitle = CalendarCreateEventTitleEdit:GetText()
-                if DEBUG_MODE then
-                    print("WorldBuffs Debug: Setting event title:", eventTitle)
-                    print("WorldBuffs Debug: Title field contains:", setTitle)
-                end
-                -- If title is still empty, try setting it again
-                if setTitle == "" then
-                    C_Timer.After(0.1, function()
-                        if CalendarCreateEventTitleEdit then
-                            CalendarCreateEventTitleEdit:SetText(eventTitle)
-                        end
-                    end)
-                end
+                print("WorldBuffs Debug: Setting event title:", eventTitleWithMetadata)
+                print("WorldBuffs Debug: Title field contains:", setTitle)
             else
-                if DEBUG_MODE then
-                    print("WorldBuffs Debug: CalendarCreateEventTitleEdit not found!")
-                end
+                print("WorldBuffs Debug: CalendarCreateEventTitleEdit not found!")
             end
             
             -- Set the enhanced event description with player name and faction-specific text
             local factionTemplates = eventDescriptionTemplates[playerFaction] or eventDescriptionTemplates["Horde"]
             local descriptionTemplate = factionTemplates[itemType] or "World buff drop event by <playername>."
             local description = ProcessEventText(descriptionTemplate, playerName, itemName)
+            
+            -- Set the description (no metadata needed - title patterns work fine)
             if CalendarCreateEventDescriptionContainer and CalendarCreateEventDescriptionContainer.ScrollingEditBox then
                 CalendarCreateEventDescriptionContainer.ScrollingEditBox:SetText(description)
             end
@@ -1307,31 +1439,376 @@ SlashCmdList["WORLDBUFF"] = function()
     elseif WorldBuffFrame then
         WorldBuffFrame:Show()
         WorldBuffs:ShowTab("REND_HEAD") -- Default to first tab
+        
+        -- Run garbage collection on deleted entries when window is opened
+        WorldBuffs:GarbageCollectDeletedEntries(7) -- Keep deleted entries for 7 days
+    end
+end
+
+-- Sanitize an entry by removing invalid fields and creating a clean copy
+function WorldBuffs:SanitizeEntry(entry)
+    if not entry then return nil end
+    
+    -- Valid field names that should exist in a world buff entry
+    local validFields = {
+        playerName = true,
+        mainName = true,
+        receivedDate = true,
+        dropped = true,
+        lastModified = true,
+        deleted = true,
+        deletedTime = true
+    }
+    
+    -- Create a clean new entry with only valid fields (with explicit string copies)
+    local cleanEntry = {}
+    
+    for key, value in pairs(entry) do
+        if validFields[key] then
+            -- Force string copy to prevent memory corruption
+            if type(value) == "string" then
+                cleanEntry[key] = tostring(value)
+            else
+                cleanEntry[key] = value
+            end
+        elseif DEBUG_MODE then
+            print("WorldBuff Debug: Removing invalid field '" .. tostring(key) .. "' from entry")
+        end
+    end
+    
+    -- Validate and fix data types
+    if cleanEntry.lastModified and type(cleanEntry.lastModified) ~= "number" then
+        cleanEntry.lastModified = time()
+    end
+    
+    if cleanEntry.deletedTime and type(cleanEntry.deletedTime) ~= "number" then
+        cleanEntry.deletedTime = time()
+    end
+    
+    -- Ensure required fields exist
+    if not cleanEntry.playerName or cleanEntry.playerName == "" or cleanEntry.playerName:match("^%s*$") then
+        -- Entry has no valid player name, reject it
+        if DEBUG_MODE then
+            print("WorldBuff Debug: Rejecting entry with no valid player name")
+        end
+        return nil
+    end
+    
+    -- Reject [Alt of X] placeholder entries from old design
+    if cleanEntry.playerName:match("^%[Alt of .+%]$") then
+        if DEBUG_MODE then
+            print("WorldBuff Debug: Rejecting [Alt of X] placeholder entry")
+        end
+        return nil
+    end
+    
+    if not cleanEntry.mainName or cleanEntry.mainName == "" then
+        cleanEntry.mainName = cleanEntry.playerName
+    end
+    
+    -- Validate mainName for corruption patterns
+    if cleanEntry.mainName then
+        local mName = cleanEntry.mainName
+        
+        -- Reject if mainName is corrupted (dates, truncated [Alt of X], timestamp digits)
+        if mName:match("%d%d?/%d%d?/%d%d%d%d") or  -- Date pattern
+           mName:match("%d%d%d%d%d%d") or          -- 6+ consecutive digits (timestamp)
+           mName:match("^%[Alt of [^%]]*$") or     -- Truncated [Alt of X]
+           mName:match("/%d") or                    -- Slash followed by digit (date fragment)
+           #mName < 2 then                          -- Too short
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting entry with corrupted mainName: " .. mName)
+            end
+            return nil
+        end
+    end
+    
+    -- Reject entries with "Unknown Player" as the name
+    if cleanEntry.playerName == "Unknown Player" or cleanEntry.mainName == "Unknown Player" then
+        if DEBUG_MODE then
+            print("WorldBuff Debug: Rejecting Unknown Player entry")
+        end
+        return nil
+    end
+    
+    -- Reject obviously corrupted player names (dates, short names, weird characters)
+    if cleanEntry.playerName then
+        local pName = cleanEntry.playerName
+        
+        -- Reject if playerName looks like a date (contains / or has year pattern)
+        if pName:match("%d%d?/%d%d?/%d%d%d%d") or pName:match("20%d%d") then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting entry with date in playerName: " .. pName)
+            end
+            return nil
+        end
+        
+        -- Reject very short names - likely truncated
+        if #pName < 3 then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting entry with truncated playerName: " .. pName)
+            end
+            return nil
+        end
+        
+        -- Reject names with 6+ consecutive digits (timestamp fragments)
+        if pName:match("%d%d%d%d%d%d") then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting entry with timestamp digits in playerName: " .. pName)
+            end
+            return nil
+        end
+        
+        -- Reject truncated [Alt of X] entries (missing closing bracket or too short after "Alt of")
+        if pName:match("^%[Alt of [^%]]*$") or pName:match("^%[Alt of .?.?%]$") then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting truncated [Alt of X] entry: " .. pName)
+            end
+            return nil
+        end
+        
+        -- Reject names with slash followed by digits (date fragments like H/2025)
+        if pName:match("/%d") then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Rejecting entry with date fragment in playerName: " .. pName)
+            end
+            return nil
+        end
+    end
+    
+    -- Validate lastModified timestamp (should be reasonable unix timestamp)
+    if cleanEntry.lastModified and (cleanEntry.lastModified < 1700000000 or cleanEntry.lastModified > 2000000000) then
+        if DEBUG_MODE then
+            print("WorldBuff Debug: Fixing corrupted timestamp: " .. cleanEntry.lastModified)
+        end
+        cleanEntry.lastModified = time()
+    end
+    
+    -- Validate and fix receivedDate format
+    if not cleanEntry.receivedDate or cleanEntry.receivedDate == "" then
+        cleanEntry.receivedDate = date("%m/%d/%Y")
+    elseif type(cleanEntry.receivedDate) == "number" then
+        -- Convert Unix timestamp to date string
+        cleanEntry.receivedDate = date("%m/%d/%Y", cleanEntry.receivedDate)
+        if DEBUG_MODE then
+            print("WorldBuff Debug: Converted timestamp receivedDate to date string")
+        end
+    else
+        -- Check if date format is valid (MM/DD/YYYY)
+        local month, day, year = cleanEntry.receivedDate:match("^(%d%d?)/(%d%d?)/(%d%d%d%d)$")
+        if not month or not day or not year then
+            if DEBUG_MODE then
+                print("WorldBuff Debug: Fixing malformed receivedDate: " .. cleanEntry.receivedDate)
+            end
+            cleanEntry.receivedDate = date("%m/%d/%Y")
+        else
+            -- Validate date ranges
+            month = tonumber(month)
+            day = tonumber(day)
+            year = tonumber(year)
+            if month < 1 or month > 12 or day < 1 or day > 31 or year < 2019 or year > 2030 then
+                if DEBUG_MODE then
+                    print("WorldBuff Debug: Fixing out-of-range receivedDate: " .. cleanEntry.receivedDate)
+                end
+                cleanEntry.receivedDate = date("%m/%d/%Y")
+            end
+        end
+    end
+    
+    if not cleanEntry.dropped then
+        cleanEntry.dropped = "No"
+    end
+    
+    if not cleanEntry.lastModified then
+        cleanEntry.lastModified = time()
+    end
+    
+    return cleanEntry
+end
+
+-- Clean up corrupted data entries
+function WorldBuffs:CleanupCorruptedData()
+    local tables = {
+        {name = "WorldBuffRendData", data = WorldBuffRendData},
+        {name = "WorldBuffHakkarData", data = WorldBuffHakkarData},
+        {name = "WorldBuffOnyxiaData", data = WorldBuffOnyxiaData},
+        {name = "WorldBuffNefarianData", data = WorldBuffNefarianData}
+    }
+    
+    local totalCleaned = 0
+    local totalRemoved = 0
+    local corruptionTypes = {
+        ["[Alt of X]"] = 0,
+        ["Unknown Player"] = 0,
+        ["Date as Name"] = 0,
+        ["Timestamp Digits"] = 0,
+        ["Invalid Fields"] = 0,
+        ["Truncated"] = 0
+    }
+    
+    for _, tableInfo in ipairs(tables) do
+        if tableInfo.data then
+            local i = 1
+            local tableRemoved = 0
+            while i <= #tableInfo.data do
+                local entry = tableInfo.data[i]
+                local removed = false
+                
+                -- Track corruption types
+                if entry.playerName then
+                    if entry.playerName:match("^%[Alt of .+%]$") then
+                        corruptionTypes["[Alt of X]"] = corruptionTypes["[Alt of X]"] + 1
+                        removed = true
+                    elseif entry.playerName == "Unknown Player" then
+                        corruptionTypes["Unknown Player"] = corruptionTypes["Unknown Player"] + 1
+                        removed = true
+                    elseif entry.playerName:match("%d%d?/%d%d?/%d%d%d%d") then
+                        corruptionTypes["Date as Name"] = corruptionTypes["Date as Name"] + 1
+                        removed = true
+                    elseif entry.playerName:match("%d%d%d%d%d%d") then
+                        corruptionTypes["Timestamp Digits"] = corruptionTypes["Timestamp Digits"] + 1
+                        removed = true
+                    elseif #entry.playerName < 3 then
+                        corruptionTypes["Truncated"] = corruptionTypes["Truncated"] + 1
+                        removed = true
+                    end
+                end
+                
+                -- Sanitize the entry to remove corrupted fields
+                local cleanEntry = self:SanitizeEntry(entry)
+                
+                if cleanEntry and not removed then
+                    -- Replace with clean entry
+                    tableInfo.data[i] = cleanEntry
+                    totalCleaned = totalCleaned + 1
+                    i = i + 1
+                else
+                    -- Entry is too corrupted, remove it
+                    if DEBUG_MODE and entry.playerName then
+                        print("WorldBuff Debug: Removing corrupted entry from " .. tableInfo.name .. ": " .. tostring(entry.playerName))
+                    end
+                    table.remove(tableInfo.data, i)
+                    totalRemoved = totalRemoved + 1
+                    tableRemoved = tableRemoved + 1
+                end
+            end
+            
+            if tableRemoved > 0 and DEBUG_MODE then
+                print("WorldBuff Debug: Removed " .. tableRemoved .. " corrupted entries from " .. tableInfo.name)
+            end
+        end
+    end
+    
+    -- Print summary
+    if totalRemoved > 0 then
+        print("|cFFFF9900ClassicCalendar:|r Cleaned up " .. totalRemoved .. " corrupted world buff entries")
+        
+        if DEBUG_MODE then
+            for cType, count in pairs(corruptionTypes) do
+                if count > 0 then
+                    print("  - " .. cType .. ": " .. count)
+                end
+            end
+        end
+    end
+    
+    if totalCleaned > 0 and DEBUG_MODE then
+        print("WorldBuff Debug: Sanitized " .. totalCleaned .. " entries (removed invalid fields)")
+    end
+end
+
+-- Fix corrupted saved variable data (legacy function - now uses sanitization)
+function WorldBuffs:FixCorruptedData()
+    -- Just call the cleanup function which now includes sanitization
+    self:CleanupCorruptedData()
+end
+
+-- Migrate old WorldBuffData format to new separate tables
+function WorldBuffs:MigrateOldData()
+    if WorldBuffData then
+        print("WorldBuff Debug: Migrating old WorldBuffData to separate tables...")
+        
+        -- Migrate each item type to its own table
+        if WorldBuffData["REND_HEAD"] and #WorldBuffData["REND_HEAD"] > 0 then
+            for _, entry in ipairs(WorldBuffData["REND_HEAD"]) do
+                table.insert(WorldBuffRendData, entry)
+            end
+            print("WorldBuff Debug: Migrated", #WorldBuffData["REND_HEAD"], "REND_HEAD entries")
+        end
+        
+        if WorldBuffData["HAKKAR_HEART"] and #WorldBuffData["HAKKAR_HEART"] > 0 then
+            for _, entry in ipairs(WorldBuffData["HAKKAR_HEART"]) do
+                table.insert(WorldBuffHakkarData, entry)
+            end
+            print("WorldBuff Debug: Migrated", #WorldBuffData["HAKKAR_HEART"], "HAKKAR_HEART entries")
+        end
+        
+        if WorldBuffData["ONYXIA_HEAD"] and #WorldBuffData["ONYXIA_HEAD"] > 0 then
+            for _, entry in ipairs(WorldBuffData["ONYXIA_HEAD"]) do
+                table.insert(WorldBuffOnyxiaData, entry)
+            end
+            print("WorldBuff Debug: Migrated", #WorldBuffData["ONYXIA_HEAD"], "ONYXIA_HEAD entries")
+        end
+        
+        if WorldBuffData["NEFARIAN_HEAD"] and #WorldBuffData["NEFARIAN_HEAD"] > 0 then
+            for _, entry in ipairs(WorldBuffData["NEFARIAN_HEAD"]) do
+                table.insert(WorldBuffNefarianData, entry)
+            end
+            print("WorldBuff Debug: Migrated", #WorldBuffData["NEFARIAN_HEAD"], "NEFARIAN_HEAD entries")
+        end
+        
+        -- Clear old data after migration
+        WorldBuffData = nil
+        print("WorldBuff Debug: Migration complete, old WorldBuffData cleared")
     end
 end
 
 -- Initialize WorldBuff module
 function WorldBuffs:Initialize()
-    if DEBUG_MODE then
-        print("ClassicCalendar: WorldBuff module loaded")
-    end
+    print("ClassicCalendar: WorldBuff module loaded")
     
-    -- Initialize saved variables
-    if not WorldBuffData then
-        WorldBuffData = {}
-        if DEBUG_MODE then
-            print("WorldBuff Debug: Initialized empty WorldBuffData")
-        end
-    end
+	-- Initialize World Buffs filter in saved variables instead of CVar
+	if not CCConfig then
+		CCConfig = {}
+	end
+	if CCConfig.calendarShowWorldBuffs == nil then
+		CCConfig.calendarShowWorldBuffs = true -- Default to enabled
+		print("WorldBuff Debug: Initialized calendarShowWorldBuffs in CCConfig with default value true")
+	else
+		print("WorldBuff Debug: calendarShowWorldBuffs already exists in CCConfig, value:", CCConfig.calendarShowWorldBuffs)
+	end
+	
+	-- Initialize WorldBuff frame position storage
+	if not CCConfig.WorldBuffFramePos then
+		CCConfig.WorldBuffFramePos = {}
+	end
+	
+    -- Initialize saved variables - separate tables for each buff type
+    WorldBuffRendData = WorldBuffRendData or {}
+    WorldBuffHakkarData = WorldBuffHakkarData or {}
+    WorldBuffOnyxiaData = WorldBuffOnyxiaData or {}
+    WorldBuffNefarianData = WorldBuffNefarianData or {}
+    
+    -- Migrate old WorldBuffData format to new separate tables
+    self:MigrateOldData()
+    
+    -- Clean up any corrupted data
+    self:CleanupCorruptedData()
+    
+    print("WorldBuff Debug: Initialized separate data tables for each buff type")
     
     -- Initialize DataSync system
     if ClassicCalendarDataSync then
         ClassicCalendarDataSync:Initialize()
     end
+    
+    -- Run garbage collection on addon startup
+    self:GarbageCollectDeletedEntries(7) -- Keep deleted entries for 7 days
 end
 
 -- Export to addon table for access from other files
 AddonTable.WorldBuffs = WorldBuffs
+_G.WorldBuffs = WorldBuffs
 
 -- Initialize when addon loads
 local frame = CreateFrame("Frame")
@@ -1342,10 +1819,11 @@ frame:SetScript("OnEvent", function(self, event, addonName)
     if event == "ADDON_LOADED" and addonName == AddonName then
         WorldBuffs:Initialize()
     elseif event == "VARIABLES_LOADED" then
-        -- Ensure saved variables are properly loaded
-        if not WorldBuffData then
-            WorldBuffData = {}
-        end
+        -- Ensure saved variables are properly loaded - separate tables for each buff type
+        WorldBuffRendData = WorldBuffRendData or {}
+        WorldBuffHakkarData = WorldBuffHakkarData or {}
+        WorldBuffOnyxiaData = WorldBuffOnyxiaData or {}
+        WorldBuffNefarianData = WorldBuffNefarianData or {}
     elseif event == "PLAYER_LOGOUT" then
         -- Close all popups on logout for clean shutdown
         WorldBuffs:CloseAllPopups()
@@ -1562,34 +2040,77 @@ function WorldBuffs:DeleteEntry(index)
         currentTab = WorldBuffFrame.tabs[WorldBuffFrame.selectedTab].itemType
     end
     
-    if currentTab and WorldBuffData[currentTab] and WorldBuffData[currentTab][entryIndex] then
-        local playerName = WorldBuffData[currentTab][entryIndex].playerName
-        table.remove(WorldBuffData[currentTab], entryIndex)
-        
-        -- Clear edit mode if we're in it
-        if self.editMode then
-            self.editMode = false
-            self.editIndex = nil
-            self.editOriginalData = nil
+    if currentTab then
+        local dataTable = self:GetWorldBuffDataTable(currentTab)
+        if dataTable[entryIndex] then
+            local playerName = dataTable[entryIndex].playerName
+            
+            -- Mark as deleted instead of removing from table
+            dataTable[entryIndex].deleted = true
+            dataTable[entryIndex].deletedTime = time()
+            dataTable[entryIndex].lastModified = time()
+            
+            -- Clear edit mode if we're in it
+            if self.editMode then
+                self.editMode = false
+                self.editIndex = nil
+                self.editOriginalData = nil
+            end
+            
+            -- Refresh display
+            self:ShowTab(currentTab)
+            
+            -- Hide add dialog
+            if self.addDialog and self.addDialog:IsShown() then
+                self.addDialog:Hide()
+                -- Reset title back to add mode
+                self.addDialog.TitleText:SetText("Add World Buff Entry")
+            end
+            
+            print("World buff entry deleted for " .. playerName)
         end
-        
-        -- Refresh display
-        self:ShowTab(currentTab)
-        
-        -- Hide add dialog
-        if self.addDialog and self.addDialog:IsShown() then
-            self.addDialog:Hide()
-            -- Reset title back to add mode
-            self.addDialog.TitleText:SetText("Add World Buff Entry")
-        end
-        
-        print("World buff entry deleted for " .. playerName)
         
         -- Trigger guild sync
         if ClassicCalendarDataSync then
             ClassicCalendarDataSync:TriggerSync()
         end
     end
+end
+
+-- Garbage collection: Remove deleted entries older than specified days
+function WorldBuffs:GarbageCollectDeletedEntries(daysToKeep)
+    daysToKeep = daysToKeep or 7 -- Default to 7 days
+    local cutoffTime = time() - (daysToKeep * 24 * 60 * 60) -- Convert days to seconds
+    local totalCleaned = 0
+    
+    -- Process each data table separately
+    local dataTables = {
+        REND_HEAD = WorldBuffRendData,
+        HAKKAR_HEART = WorldBuffHakkarData,
+        ONYXIA_HEAD = WorldBuffOnyxiaData,
+        NEFARIAN_HEAD = WorldBuffNefarianData
+    }
+    
+    for itemType, entries in pairs(dataTables) do
+        local i = 1
+        while i <= #entries do
+            local entry = entries[i]
+            -- Remove if deleted and older than cutoff time
+            if entry.deleted and entry.deletedTime and entry.deletedTime < cutoffTime then
+                table.remove(entries, i)
+                totalCleaned = totalCleaned + 1
+                -- Don't increment i since we removed an element
+            else
+                i = i + 1
+            end
+        end
+    end
+    
+    if totalCleaned > 0 then
+        print("Cleaned up " .. totalCleaned .. " old deleted world buff entries")
+    end
+    
+    return totalCleaned
 end
 
 

@@ -15,7 +15,7 @@ L:SetGeneralLocalization{
 L = DBM:GetModLocalization("ThreeBugs")
 
 L:SetGeneralLocalization{
-	name = "Bug Trio"
+	name = "Silithid Royalty"
 }
 
 -------------
@@ -78,10 +78,6 @@ L = DBM:GetModLocalization("TwinEmpsAQ")
 
 L:SetGeneralLocalization{
 	name = "Twin Emperors"
-}
-L:SetMiscLocalization{
-	Veklor = "Emperor Vek'lor",
-	Veknil = "Emperor Vek'nilash"
 }
 
 ------------
@@ -233,7 +229,7 @@ L:SetOptionLocalization{
 	WarnDismember	= DBM_CORE_L.AUTO_ANNOUNCE_OPTIONS.spell:format(96)
 }
 L:SetMiscLocalization{
-	PursueEmote 	= " sets eyes on "
+	PursueEmote 	= "sets eyes on"
 }
 
 -------------
@@ -738,8 +734,6 @@ L:SetGeneralLocalization{
 	name = "Bloodlord Mandokir"
 }
 L:SetMiscLocalization{
-	Bloodlord 	= "Bloodlord Mandokir",
-	Ohgan		= "Ohgan",
 	GazeYell	= "I'm watching you"
 }
 
@@ -750,12 +744,6 @@ L = DBM:GetModLocalization("EdgeOfMadness")
 
 L:SetGeneralLocalization{
 	name = "Edge of Madness"
-}
-L:SetMiscLocalization{
-	Hazzarah = "Hazza'rah",
-	Renataki = "Renataki",
-	Wushoolay = "Wushoolay",
-	Grilek = "Gri'lek"
 }
 
 -------------------
@@ -846,7 +834,10 @@ L:SetOptionLocalization({
 })
 
 L:SetMiscLocalization({
-	Pull					= "Kneel before me, worm!"--Not actually pull trigger, but often said on pull
+	Pull1					= "Kneel before me, worm!",
+	Pull2					= "You cannot hide from me!",
+	Pull3					= "Slay them in the master's name!",
+	Pull4					= "Run while you still can!"
 })
 
 ---------------
@@ -902,6 +893,7 @@ L:SetOptionLocalization({
 L:SetMiscLocalization({
 	Pull1				= "Die, trespasser!",
 	Pull2				= "Glory to the master!",
+	Pull3				= "Your life is forfeit!",
 	AddsYell			= "Rise, my soldiers! Rise and fight once more!"
 })
 
@@ -931,7 +923,8 @@ L:SetOptionLocalization({
 
 L:SetMiscLocalization({
 	Pull1				= "You are mine now.",
-	Pull2				= "I see you..."
+	Pull2				= "I see you...",
+	Pull3				= "You... are next."
 })
 
 ---------------
@@ -1076,7 +1069,6 @@ L:SetWarningLocalization({
 })
 
 L:SetMiscLocalization({
-	yell			= "Foolishly you have sought your own demise.",
 	WarningWave1	= "%d %s",
 	WarningWave2	= "%d %s and %d %s",
 	WarningWave3	= "%d %s, %d %s and %d %s",
@@ -1092,7 +1084,7 @@ L:SetMiscLocalization({
 L = DBM:GetModLocalization("HorsemenVanilla")
 
 L:SetGeneralLocalization({
-	name = "Four Horsemen"
+	name = "The Four Horsemen"
 })
 
 L:SetOptionLocalization({

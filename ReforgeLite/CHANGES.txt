@@ -1,10 +1,30 @@
-tag f58b28c370b0584e767a222a624893c6041decf7 v2.3.0
+tag cf1d8b0bebacf004c31bd45a9bb9537b942779f2 v2.3.4
 Author:	skyler-code <skylerh15@github.com>
-Date:	Tue Oct 28 13:43:51 2025 -0500
+Date:	Sat Nov 22 01:39:46 2025 -0600
 
-commit 3693b2b204fbf92882ed29d6d8d070e2a585a0c0
+commit 20cc23420b6c59aa5bc9cffe98fbed4fe810bd31
 Author: skyler-code <skylerh15@github.com>
-Date:   Tue Oct 28 13:42:00 2025 -0500
+Date:   Fri Nov 21 00:16:16 2025 -0600
 
-    bump toc
+    use specids in conversion
+
+commit 56fa186440048f99b120caa7082dea93b8578c06
+Author: skyler-code <skylerh15@github.com>
+Date:   Thu Nov 20 20:55:00 2025 -0600
+
+    Haste Breakpoint Cleanup
+    
+    No longer need "FirstHasteBreak", "SecondHasteBreak", etc. enums
+
+commit 4472439e4a727d45d34498bfa9a3f2013b309e03
+Author: skyler-code <skylerh15@github.com>
+Date:   Thu Nov 20 15:26:09 2025 -0600
+
+    HPal haste breakpoint corrections
+
+commit bda38057ba783fd7e6623b94f3cad48976a6f08f
+Author: skyler-code <skylerh15@github.com>
+Date:   Wed Nov 19 23:00:14 2025 -0600
+
+    Caught error when new user uses algo compare
 

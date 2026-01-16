@@ -1,6 +1,4 @@
 local AddonName, Addon = ...
-if not Addon:IsBuild("retail") then return end
-
 local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
 
 -- constants
@@ -38,6 +36,7 @@ function ActionButtons:Initialize()
     self:SetScript("OnEvent", function(f, event, ...) f[event](f, ...); end)
     self:RegisterEvent("ACTIONBAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
+    self:RegisterEvent("PET_BAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_LOGIN")
@@ -156,6 +155,10 @@ function ActionButtons:ACTIONBAR_SHOWGRID()
 end
 
 function ActionButtons:ACTIONBAR_HIDEGRID()
+    self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
+end
+
+function ActionButtons:PET_BAR_HIDEGRID()
     self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
 end
 
@@ -414,14 +417,28 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
 
     bind.SetOverrideBindings = bindButton_SetOverrideBindings
 
-    Addon.SpellFlyout:Register(bind)
+    if Addon.SpellFlyout then
+        Addon.SpellFlyout:Register(bind)
+    end
 
     -- translate HOTKEY button "clicks" into LeftButton
-    self:WrapScript(bind, "OnClick", [[
-        if button == "HOTKEY" then
-            return "LeftButton"
-        end
-    ]])
+    if Addon:IsAfterMidnight() then
+        self:WrapScript(bind, "OnClick", [[
+            if button == "HOTKEY" then
+                if GetActionInfo(self:GetEffectiveAttribute("action")) == "flyout" then
+                    return false
+                end
+
+                return "LeftButton"
+            end
+        ]])
+    else
+        self:WrapScript(bind, "OnClick", [[
+            if button == "HOTKEY" then
+                return "LeftButton"
+            end
+        ]])
+    end
 
     button.bind = bind
     button:UpdateOverrideBindings()

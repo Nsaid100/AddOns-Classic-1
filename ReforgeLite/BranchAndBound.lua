@@ -92,7 +92,7 @@ function ReforgeLite:GetItemSortingOrder(data, priorityCap)
   end
 
   -- Sort by primary cap DESC, secondary cap DESC, then reforge potential DESC
-  table.sort(itemOrder, function(a, b)
+  sort(itemOrder, function(a, b)
     if a.primaryCapContrib ~= b.primaryCapContrib then
       return a.primaryCapContrib > b.primaryCapContrib
     elseif a.secondaryCapContrib ~= b.secondaryCapContrib then
@@ -383,7 +383,7 @@ function ReforgeLite:GetSmartReforgeOptions(data, slot, priorityCap)
   -- Sort reforge options by cap priority
   local otherCap = priorityCap == 1 and 2 or 1
 
-  table.sort(uniqueOptions, function(a, b)
+  sort(uniqueOptions, function(a, b)
     -- Priority 1: Reforges involving priority cap stat (TO or FROM)
     local aInvolvesPriorityCap = (a.src == data.caps[priorityCap].stat) or (a.dst == data.caps[priorityCap].stat)
     local bInvolvesPriorityCap = (b.src == data.caps[priorityCap].stat) or (b.dst == data.caps[priorityCap].stat)
@@ -1022,7 +1022,7 @@ function ReforgeLite:RunAlgorithmComparison()
   end
 
   -- Store original method
-  local originalMethod = CopyTable(self.pdb.method)
+  local originalMethod = self.pdb.method and CopyTable(self.pdb.method) or nil
 
   -- Run DP algorithm
   print("Running Dynamic Programming...")
@@ -1074,7 +1074,7 @@ function ReforgeLite:RunAlgorithmComparison()
   end
 
   -- Reset to original
-  self.pdb.method = CopyTable(originalMethod)
+  self.pdb.method = originalMethod and CopyTable(originalMethod) or nil
 
   -- Run Branch and Bound
   print("Running Branch and Bound...")

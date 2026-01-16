@@ -1,6 +1,6 @@
 # Baganator
 
-## [768](https://github.com/TheMouseNest/Baganator/tree/768) (2025-10-29)
-[Full Changelog](https://github.com/TheMouseNest/Baganator/compare/767...768) 
+## [773](https://github.com/TheMouseNest/Baganator/tree/773) (2025-12-08)
+[Full Changelog](https://github.com/TheMouseNest/Baganator/compare/772...773) 
 
-- Fix changing slider for recent timeout not working  
+- [Fixes #584] Retail: Fix search not clearing when changing bank type  

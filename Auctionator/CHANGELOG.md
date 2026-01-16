@@ -1,7 +1,6 @@
 # Auctionator
 
-## [300](https://github.com/TheMouseNest/Auctionator/tree/300) (2025-10-29)
-[Full Changelog](https://github.com/TheMouseNest/Auctionator/compare/299...300) 
+## [305](https://github.com/TheMouseNest/Auctionator/tree/305) (2025-12-03)
+[Full Changelog](https://github.com/TheMouseNest/Auctionator/compare/304...305) 
 
-- Combine tocs into one  
-- LegacyAH: Use updated charge patterns  
+- Selling: Add "Housing", and fix durations on TBC/Wrath  
